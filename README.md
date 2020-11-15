@@ -1,3 +1,4 @@
 # CatchMyMind
 
-#maker Lee Suyeon, Min Gyeongjin
+# maker
+Lee Suyeon, Min Gyeongjin
