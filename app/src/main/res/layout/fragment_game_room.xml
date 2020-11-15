@@ -12,13 +12,14 @@
         android:layout_height="0dp"
         android:orientation="horizontal"
         android:background="#FFD8D8"
-        android:layout_weight="0.1">
+        android:layout_weight="0.1"
+        android:weightSum="1">
 
         <Button
             android:id="@+id/btn_back"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_weight="0"
+            android:layout_weight="0.1"
             android:background="#00ff0000"
             android:text="back"
             android:textColor="@color/black"
@@ -27,7 +28,17 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0"></TextView>
+            android:layout_weight="0.8"></TextView>
+
+        <Button
+            android:id="@+id/btn_refresh"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.1"
+            android:background="#00ff0000"
+            android:text="refresh"
+            android:textColor="@color/black"
+            android:textSize="12sp"></Button>
 
     </LinearLayout>
 
