@@ -19,7 +19,8 @@ import java.util.ArrayList;
 
 public class GameRoomFragment extends Fragment {
     FragmentGameRoomBinding binding;
-    private ArrayList<String> roomList = new ArrayList<>();
+    private ArrayList<Room> roomList = new ArrayList<>();
+    private String userName;
 
     public GameRoomFragment() {
     }
@@ -27,14 +28,18 @@ public class GameRoomFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        for (int i = 0; i < 8; i++) {
-            roomList.add(String.format("Room %d", i + 1));
-        }
+//        for (int i = 0; i < 8; i++) {
+//            roomList.add(String.format("Room %d", i + 1));
+//        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        if(getArguments() != null) {
+            userName = getArguments().getString("userName");
+        }
+
         binding = FragmentGameRoomBinding.inflate(inflater, container, false);
         View view = binding.getRoot();
 
@@ -53,11 +58,18 @@ public class GameRoomFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 RoomSettingDialogFragment roomSettingDialogFragment = RoomSettingDialogFragment.getInstance();
+
+                Bundle bundle = new Bundle();
+                bundle.putString("userName", userName);
+                roomSettingDialogFragment.setArguments(bundle);
+
                 roomSettingDialogFragment.show(getParentFragmentManager(), "Create Room");
                 roomSettingDialogFragment.setDialogResult(new RoomSettingDialogFragment.RoomSettingResult() {
                     @Override
-                    public void finish(String result) {
-                        Toast.makeText(requireContext(), result, Toast.LENGTH_SHORT).show();
+                    public void finish(String roomName, String roomNumofPeo, String roomId) {
+                        Room room = new Room(roomName, roomNumofPeo, roomId);
+                        roomList.add(room);
+                        gameRoomRecyclerAdapter.notifyDataSetChanged();
                     }
                 });
             }
