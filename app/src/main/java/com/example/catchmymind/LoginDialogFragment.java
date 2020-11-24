@@ -22,6 +22,7 @@ public class LoginDialogFragment extends DialogFragment {
 
     private String userName;
 
+    private MySocket mySocket;
     private Socket socket;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
@@ -83,7 +84,8 @@ public class LoginDialogFragment extends DialogFragment {
         new Thread() {
             public void run() {
                 try {
-                    socket = new Socket(ip_addr, port_no);
+                    mySocket = new MySocket(userName, ip_addr, port_no);
+                    socket = mySocket.getInstance();
                     oos = new ObjectOutputStream(socket.getOutputStream());
                     //oos.flush();
                     ois = new ObjectInputStream(socket.getInputStream());

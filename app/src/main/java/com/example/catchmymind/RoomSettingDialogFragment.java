@@ -32,10 +32,10 @@ public class RoomSettingDialogFragment extends DialogFragment {
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
 
-    final String ip_addr = "10.0.2.2"; // Emulator PC의 127.0.0.1
-//    final String ip_addr = ""; // 실제 Phone으로 테스트 할 때 설정.
-
-    final int port_no = 30000;
+//    final String ip_addr = "10.0.2.2"; // Emulator PC의 127.0.0.1
+////    final String ip_addr = ""; // 실제 Phone으로 테스트 할 때 설정.
+//
+//    final int port_no = 30000;
 
     public RoomSettingDialogFragment() {
     }
@@ -106,7 +106,7 @@ public class RoomSettingDialogFragment extends DialogFragment {
         new Thread() {
             public void run() {
                 try {
-                    socket = new Socket(ip_addr, port_no);
+                    socket = MySocket.getInstance();
                     oos = new ObjectOutputStream(socket.getOutputStream());
                     //oos.flush();
                     ois = new ObjectInputStream(socket.getInputStream());
