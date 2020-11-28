@@ -18,5 +18,9 @@
         android:id="@+id/gameRoomFragment"
         android:name="com.example.catchmymind.GameRoomFragment"
         android:label="fragment_game_room"
-        tools:layout="@layout/fragment_game_room" />
+        tools:layout="@layout/fragment_game_room" >
+        <action
+            android:id="@+id/action_gameRoomFragment_to_appStartFragment"
+            app:destination="@id/appStartFragment" />
+    </fragment>
 </navigation>

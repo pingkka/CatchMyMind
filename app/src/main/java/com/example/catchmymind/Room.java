@@ -10,4 +10,16 @@ public class Room {
         this.roomNumofPeo = roomNumofPeo;
         this.roomId = roomId;
     }
+
+    public String getRoomName() {
+        return roomName;
+    }
+
+    public String getRoomNumofPeo() {
+        return roomNumofPeo;
+    }
+
+    public String getRoomId() {
+        return roomId;
+    }
 }

@@ -4,21 +4,19 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import com.example.catchmymind.databinding.FragmentAppStartBinding;
 
 
 public class AppStartFragment extends Fragment {
 
     private FragmentAppStartBinding binding;
-    private String userName;
-
     public AppStartFragment() {
 
     }
@@ -50,13 +48,6 @@ public class AppStartFragment extends Fragment {
                 loginDialog.setDialogResult(new LoginDialogFragment.LoginResult() {
                     @Override
                     public void finish(String name, String code) {
-                        userName = name;
-
-                        Fragment fragment = new GameRoomFragment();
-                        Bundle bundle = new Bundle();
-                        bundle.putString("userName", userName);
-                        fragment.setArguments(bundle);
-
                         if(code.equals("100")) {
                             getActivity().runOnUiThread(new Runnable() {
                                 @Override
