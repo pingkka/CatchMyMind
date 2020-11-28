@@ -13,8 +13,8 @@ public class MySocket extends Socket {
     private static MySocket socket;
 
     private String userName;
-//    private static final String ip_addr = "10.0.2.2"; // Emulator PC의 127.0.0.1
-    private static final String ip_addr = "192.168.123.100"; // 실제 Phone으로 테스트 할 때 설정.
+    private static final String ip_addr = "10.0.2.2"; // Emulator PC의 127.0.0.1
+//    private static final String ip_addr = "192.168.123.100"; // 실제 Phone으로 테스트 할 때 설정.
     private static final int port_no = 30000;
     private static ObjectInputStream myOis;
     private static ObjectOutputStream myOos;
