@@ -13,9 +13,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 
 public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecyclerAdapter.ViewHolder> {
-    private ArrayList<String> rooms;
+    private ArrayList<Room> rooms;
 
-    GameRoomRecyclerAdapter(ArrayList<String> list){
+    GameRoomRecyclerAdapter(ArrayList<Room> list){
         rooms = list;
     }
 
@@ -44,9 +44,10 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        String room = rooms.get(position);
-        //String roomNumofPeo = rooms.get(position);
-        holder.roomName.setText(room);
+//        String room = rooms.get(position);
+//        String roomNumofPeo = rooms.get(position);
+        holder.roomName.setText(rooms.get(position).roomName);
+        holder.roomNumofPeo.setText(rooms.get(position).roomNumofPeo);
     }
 
     @Override

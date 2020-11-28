@@ -49,9 +49,22 @@ public class AppStartFragment extends Fragment {
                 loginDialog.show(getParentFragmentManager(), "login");
                 loginDialog.setDialogResult(new LoginDialogFragment.LoginResult() {
                     @Override
-                    public void finish(String result) {
-                        userName = result;
-                        Navigation.findNavController(requireView()).navigate(R.id.action_appStartFragment_to_gameRoomFragment);
+                    public void finish(String name, String code) {
+                        userName = name;
+
+                        Fragment fragment = new GameRoomFragment();
+                        Bundle bundle = new Bundle();
+                        bundle.putString("userName", userName);
+                        fragment.setArguments(bundle);
+
+                        if(code.equals("100")) {
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Navigation.findNavController(requireView()).navigate(R.id.action_appStartFragment_to_gameRoomFragment);
+                                }
+                            });
+                        }
                     }
                 });
             }
