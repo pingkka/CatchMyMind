@@ -24,4 +24,36 @@ public class ChatMsg {
         this.userName = userName;
         this.data = msg;
     }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getRoomName() {
+        return roomName;
+    }
+
+    public String getRoomNumofPeo() {
+        return roomNumofPeo;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
+    }
+
+    public void setRoomNumofPeo(String roomNumofPeo) {
+        this.roomNumofPeo = roomNumofPeo;
+    }
 }

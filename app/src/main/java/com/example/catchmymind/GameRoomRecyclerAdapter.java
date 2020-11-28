@@ -4,7 +4,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,7 +14,7 @@ import java.util.ArrayList;
 public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecyclerAdapter.ViewHolder> {
     private ArrayList<Room> rooms;
 
-    GameRoomRecyclerAdapter(ArrayList<Room> list){
+    public GameRoomRecyclerAdapter(ArrayList<Room> list){
         rooms = list;
     }
 

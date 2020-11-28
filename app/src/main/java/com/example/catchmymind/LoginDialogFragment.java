@@ -1,6 +1,7 @@
 package com.example.catchmymind;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,23 +16,17 @@ import androidx.fragment.app.DialogFragment;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
+import java.io.Serializable;
 
-public class LoginDialogFragment extends DialogFragment {
+public class LoginDialogFragment extends DialogFragment implements Serializable {
     LoginResult result;
 
     private String userName;
 
-    private MySocket mySocket;
-    private Socket socket;
+    private MySocket socket;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
     public boolean LoginStatus = false;
-
-    final String ip_addr = "10.0.2.2"; // Emulator PC의 127.0.0.1
-//    final String ip_addr = ""; // 실제 Phone으로 테스트 할 때 설정.
-
-    final int port_no = 30000;
 
     public LoginDialogFragment() {
     }
@@ -47,18 +42,15 @@ public class LoginDialogFragment extends DialogFragment {
         View view = inflater.inflate(R.layout.login_dialog, container);
         Button btn_login = (Button) view.findViewById(R.id.btn_login);
         EditText et_login = (EditText) view.findViewById(R.id.et_login);
-        btn_login.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // 로그인
-                userName = et_login.getText().toString();
-                if(!userName.equals("")) {
-                    Login();
-                    dismiss();
-                }
-                else
-                    Toast.makeText(requireContext(),"입력해주세요",Toast.LENGTH_SHORT).show();
+        btn_login.setOnClickListener(view1 -> {
+            // 로그인
+            userName = et_login.getText().toString();
+            if(!userName.equals("")) {
+                Login();
+                dismiss();
             }
+            else
+                Toast.makeText(requireContext(),"입력해주세요",Toast.LENGTH_SHORT).show();
         });
 
         return view;
@@ -84,11 +76,13 @@ public class LoginDialogFragment extends DialogFragment {
         new Thread() {
             public void run() {
                 try {
-                    mySocket = new MySocket(userName, ip_addr, port_no);
-                    socket = mySocket.getInstance();
-                    oos = new ObjectOutputStream(socket.getOutputStream());
-                    //oos.flush();
-                    ois = new ObjectInputStream(socket.getInputStream());
+                    socket = MySocket.getInstance();
+                    Log.d("Login: ", userName);
+                    socket.setUserName(userName);
+                    oos = socket.getMyOos();
+                    oos.flush();
+                    ois = socket.getMyOis();
+
                     ChatMsg obj = new ChatMsg(userName,"100", "hello");
                     SendChatMsg(obj);
                     LoginStatus = true;

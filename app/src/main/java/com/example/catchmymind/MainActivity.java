@@ -6,6 +6,8 @@ import androidx.navigation.NavGraph;
 
 import android.os.Bundle;
 
+import com.example.catchmymind.R;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override

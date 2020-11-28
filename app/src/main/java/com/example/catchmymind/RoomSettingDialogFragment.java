@@ -18,24 +18,17 @@ import androidx.fragment.app.DialogFragment;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
+import java.io.Serializable;
 
-public class RoomSettingDialogFragment extends DialogFragment {
+public class RoomSettingDialogFragment extends DialogFragment implements Serializable {
     RoomSettingResult result;
-
-    private String userName;
 
     private String roomName;
     private String roomNumofPeo;
 
-    private Socket socket;
+    private MySocket socket;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
-
-//    final String ip_addr = "10.0.2.2"; // Emulator PC의 127.0.0.1
-////    final String ip_addr = ""; // 실제 Phone으로 테스트 할 때 설정.
-//
-//    final int port_no = 30000;
 
     public RoomSettingDialogFragment() {
     }
@@ -57,30 +50,18 @@ public class RoomSettingDialogFragment extends DialogFragment {
                 R.array.num_of_people, android.R.layout.simple_spinner_dropdown_item);
         sp_num_of_peo.setAdapter(num_of_peo_Adapter);
 
-        if(getArguments() != null) {
-            userName = getArguments().getString("userName");
-        }
-
-        btn_create.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                roomName = et_room_name.getText().toString();
-                roomNumofPeo = sp_num_of_peo.getSelectedItem().toString();
-                if(!roomName.equals("")) {
-                    CreateRoom();
-                    dismiss();
-                }
-                else
-                    Toast.makeText(requireContext(),"입력해주세요",Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        btn_cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        btn_create.setOnClickListener(view12 -> {
+            roomName = et_room_name.getText().toString();
+            roomNumofPeo = sp_num_of_peo.getSelectedItem().toString();
+            if(!roomName.equals("")) {
+                CreateRoom();
                 dismiss();
             }
+            else
+                Toast.makeText(requireContext(),"입력해주세요",Toast.LENGTH_SHORT).show();
         });
+
+        btn_cancel.setOnClickListener(view1 -> dismiss());
 
 
         return view;
@@ -107,14 +88,14 @@ public class RoomSettingDialogFragment extends DialogFragment {
             public void run() {
                 try {
                     socket = MySocket.getInstance();
-                    oos = new ObjectOutputStream(socket.getOutputStream());
-                    //oos.flush();
-                    ois = new ObjectInputStream(socket.getInputStream());
+                    oos = socket.getMyOos();
+                    oos.flush();
+                    ois = socket.getMyOis();
                     ChatMsg obj = new ChatMsg();
-                    obj.code = "300";
-                    obj.userName = userName;
-                    obj.roomName = roomName;
-                    obj.roomNumofPeo = roomNumofPeo;
+                    obj.setCode("300");
+                    obj.setUserName(socket.getUserName());
+                    obj.setRoomName(roomName);
+                    obj.setRoomNumofPeo(roomNumofPeo);
                     SendChatMsg(obj);
                     DoReceive(); // Server에서 읽는 Thread 실행
                 } catch (IOException e) {
@@ -139,10 +120,6 @@ public class RoomSettingDialogFragment extends DialogFragment {
             public void run() {
                 // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
                 try {
-                    Log.d("cm.code:", cm.code);
-                    Log.d("cm.userName:", cm.userName);
-                    Log.d("cm.roomName:", cm.roomName);
-                    Log.d("cm.roomNumofPeo:", cm.roomNumofPeo);
                     oos.writeObject(cm.code);
                     oos.writeObject(cm.userName);
                     oos.writeObject(cm.roomName);
@@ -158,8 +135,11 @@ public class RoomSettingDialogFragment extends DialogFragment {
     public ChatMsg ReadChatMsg()  {
         ChatMsg cm = new ChatMsg();
         try {
+            // 여기가 문제
             cm.code = (String) ois.readObject();
             cm.roomId = (String) ois.readObject();
+            Log.d("ReadChatMsg : ", cm.getCode());
+            Log.d("ReadChatMsg : ", cm.getUserName());
             // cm.roomId 수신
             result.finish(roomName, roomNumofPeo, cm.roomId);
         } catch (ClassNotFoundException e) {
