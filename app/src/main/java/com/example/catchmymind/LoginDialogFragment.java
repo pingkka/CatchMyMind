@@ -5,13 +5,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+
+import com.example.catchmymind.databinding.LoginDialogBinding;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -19,6 +19,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 public class LoginDialogFragment extends DialogFragment implements Serializable {
+    private LoginDialogBinding binding;
     LoginResult result;
 
     private String userName;
@@ -39,12 +40,12 @@ public class LoginDialogFragment extends DialogFragment implements Serializable 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.login_dialog, container);
-        Button btn_login = (Button) view.findViewById(R.id.btn_login);
-        EditText et_login = (EditText) view.findViewById(R.id.et_login);
-        btn_login.setOnClickListener(view1 -> {
+        binding = LoginDialogBinding.inflate(inflater, container, false);
+        View view = binding.getRoot();
+
+        binding.btnLogin.setOnClickListener(view1 -> {
             // 로그인
-            userName = et_login.getText().toString();
+            userName = binding.etLogin.getText().toString();
             if(!userName.equals("")) {
                 Login();
                 dismiss();
@@ -109,9 +110,9 @@ public class LoginDialogFragment extends DialogFragment implements Serializable 
             public void run() {
                 // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
                 try {
-                    oos.writeObject(cm.code);
-                    oos.writeObject(cm.userName);
-                    oos.writeObject(cm.data);
+                    oos.writeObject(cm.getCode());
+                    oos.writeObject(cm.getUserName());
+                    oos.writeObject(cm.getData());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -123,10 +124,10 @@ public class LoginDialogFragment extends DialogFragment implements Serializable 
     public ChatMsg ReadChatMsg()  {
         ChatMsg cm = new ChatMsg("","","");
         try {
-            cm.code = (String) ois.readObject();
-            cm.userName = (String) ois.readObject();
-            cm.data = (String) ois.readObject();
-            result.finish(cm.userName, cm.code);
+            cm.setCode((String) ois.readObject());
+            cm.setUserName((String) ois.readObject());
+            cm.setData((String) ois.readObject());
+            result.finish(cm.getUserName(), cm.getCode());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

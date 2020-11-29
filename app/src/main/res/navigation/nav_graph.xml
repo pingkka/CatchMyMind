@@ -22,5 +22,17 @@
         <action
             android:id="@+id/action_gameRoomFragment_to_appStartFragment"
             app:destination="@id/appStartFragment" />
+        <action
+            android:id="@+id/action_gameRoomFragment_to_gameFragment"
+            app:destination="@id/gameFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/gameFragment"
+        android:name="com.example.catchmymind.GameFragment"
+        android:label="fragment_game"
+        tools:layout="@layout/fragment_game" >
+        <action
+            android:id="@+id/action_gameFragment_to_gameRoomFragment"
+            app:destination="@id/gameRoomFragment" />
     </fragment>
 </navigation>

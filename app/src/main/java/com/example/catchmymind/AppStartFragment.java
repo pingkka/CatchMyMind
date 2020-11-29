@@ -17,14 +17,13 @@ import com.example.catchmymind.databinding.FragmentAppStartBinding;
 public class AppStartFragment extends Fragment {
 
     private FragmentAppStartBinding binding;
-    public AppStartFragment() {
 
+    public AppStartFragment() {
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -40,25 +39,14 @@ public class AppStartFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        binding.btnStart.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view) {
-                LoginDialogFragment loginDialog = LoginDialogFragment.getInstance();
-                loginDialog.show(getParentFragmentManager(), "login");
-                loginDialog.setDialogResult(new LoginDialogFragment.LoginResult() {
-                    @Override
-                    public void finish(String name, String code) {
-                        if(code.equals("100")) {
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Navigation.findNavController(requireView()).navigate(R.id.action_appStartFragment_to_gameRoomFragment);
-                                }
-                            });
-                        }
-                    }
-                });
-            }
+        binding.btnStart.setOnClickListener(view1 -> {
+            LoginDialogFragment loginDialog = LoginDialogFragment.getInstance();
+            loginDialog.show(getParentFragmentManager(), "login");
+            loginDialog.setDialogResult((name, code) -> {
+                if(code.equals("100")) {
+                    getActivity().runOnUiThread(() -> Navigation.findNavController(requireView()).navigate(R.id.action_appStartFragment_to_gameRoomFragment));
+                }
+            });
         });
     }
 }

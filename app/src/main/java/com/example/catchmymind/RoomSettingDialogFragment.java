@@ -6,14 +6,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+
+import com.example.catchmymind.databinding.RoomSettingDialogBinding;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -21,7 +20,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 public class RoomSettingDialogFragment extends DialogFragment implements Serializable {
-    RoomSettingResult result;
+    private RoomSettingResult result;
+    private RoomSettingDialogBinding binding;
 
     private String roomName;
     private String roomNumofPeo;
@@ -41,27 +41,25 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.room_setting_dialog, container);
-        Button btn_create= (Button) view.findViewById(R.id.btn_create);
-        EditText et_room_name = (EditText) view.findViewById(R.id.et_room_name);
-        Button btn_cancel = (Button) view.findViewById(R.id.btn_cancel);
-        Spinner sp_num_of_peo = (Spinner) view.findViewById(R.id.sp_set_num_of_peo);
+        binding = RoomSettingDialogBinding.inflate(inflater, container, false);
+        View view = binding.getRoot();
+
         ArrayAdapter num_of_peo_Adapter = ArrayAdapter.createFromResource(requireContext(),
                 R.array.num_of_people, android.R.layout.simple_spinner_dropdown_item);
-        sp_num_of_peo.setAdapter(num_of_peo_Adapter);
+        binding.spSetNumOfPeo.setAdapter(num_of_peo_Adapter);
 
-        btn_create.setOnClickListener(view12 -> {
-            roomName = et_room_name.getText().toString();
-            roomNumofPeo = sp_num_of_peo.getSelectedItem().toString();
+        binding.btnCreate.setOnClickListener(view12 -> {
+            roomName = binding.etRoomName.getText().toString();
+            roomNumofPeo = binding.spSetNumOfPeo.getSelectedItem().toString();
             if(!roomName.equals("")) {
-                CreateRoom();
+                createRoom();
                 dismiss();
             }
             else
                 Toast.makeText(requireContext(),"입력해주세요",Toast.LENGTH_SHORT).show();
         });
 
-        btn_cancel.setOnClickListener(view1 -> dismiss());
+        binding.btnCancel.setOnClickListener(view1 -> dismiss());
 
 
         return view;
@@ -83,7 +81,7 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
         getDialog().getWindow().setLayout(width, height);
     }
 
-    public void CreateRoom() {
+    public void createRoom() {
         new Thread() {
             public void run() {
                 try {
@@ -120,10 +118,10 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
             public void run() {
                 // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
                 try {
-                    oos.writeObject(cm.code);
-                    oos.writeObject(cm.userName);
-                    oos.writeObject(cm.roomName);
-                    oos.writeObject(cm.roomNumofPeo);
+                    oos.writeObject(cm.getCode());
+                    oos.writeObject(cm.getUserName());
+                    oos.writeObject(cm.getRoomName());
+                    oos.writeObject(cm.getRoomNumofPeo());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -136,12 +134,13 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
         ChatMsg cm = new ChatMsg();
         try {
             // 여기가 문제
-            cm.code = (String) ois.readObject();
-            cm.roomId = (String) ois.readObject();
+            cm.setCode((String) ois.readObject());
+            cm.setRoomId((String) ois.readObject());
             Log.d("ReadChatMsg : ", cm.getCode());
+            Log.d("ReadChatMsg : ", cm.getRoomId());
             Log.d("ReadChatMsg : ", cm.getUserName());
             // cm.roomId 수신
-            result.finish(roomName, roomNumofPeo, cm.roomId);
+            result.finish(cm.getRoomName(), cm.getRoomNumofPeo(), cm.getRoomId());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

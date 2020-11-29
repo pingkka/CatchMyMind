@@ -22,8 +22,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class GameRoomFragment extends Fragment implements Serializable {
-    FragmentGameRoomBinding binding;
     private ArrayList<Room> roomList = new ArrayList<>();
+    private FragmentGameRoomBinding binding;
 
     private MySocket socket;
     private ObjectInputStream ois;
@@ -78,6 +78,7 @@ public class GameRoomFragment extends Fragment implements Serializable {
                 gameRoomRecyclerAdapter.notifyDataSetChanged();
             });
         });
+
     }
 
     public void Logout() {
@@ -113,9 +114,9 @@ public class GameRoomFragment extends Fragment implements Serializable {
             public void run() {
                 // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
                 try {
-                    oos.writeObject(cm.code);
-                    oos.writeObject(cm.userName);
-                    oos.writeObject(cm.data);
+                    oos.writeObject(cm.getCode());
+                    oos.writeObject(cm.getUserName());
+                    oos.writeObject(cm.getData());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -128,11 +129,11 @@ public class GameRoomFragment extends Fragment implements Serializable {
         ChatMsg cm = new ChatMsg("","","");
         try {
             // 여기가 문제
-            cm.code = (String) ois.readObject();
-            cm.userName = (String) ois.readObject();
-            cm.data = (String) ois.readObject();
+            cm.setCode((String) ois.readObject());
+            cm.setUserName((String) ois.readObject());
+            cm.setData((String) ois.readObject());
 
-            if(cm.code.equals("400")) {
+            if(cm.getCode().equals("400")) {
                 getActivity().runOnUiThread(() -> Navigation.findNavController(requireView()).navigate(R.id.action_gameRoomFragment_to_appStartFragment));
             }
         } catch (ClassNotFoundException e) {

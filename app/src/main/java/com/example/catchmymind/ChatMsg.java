@@ -2,20 +2,21 @@ package com.example.catchmymind;
 
 // ChatMsg.java 채팅 메시지 ObjectStream 용.
 public class ChatMsg {
-    public String code;
-    public String userName;
-    public String data;
-    public byte[] imgbytes;
+    private String code;
+    private String userName;
+    private String data;
+    private byte[] imgbytes;
 
-    public String roomName; // 방이름
-    public String roomNumofPeo; // 인원수
+    private String roomName; // 방이름
+    private String roomNumofPeo; // 인원수
 
-    public String roomId; // 방아이디
+    private String roomId; // 방아이디
 
-    public String quiz; // 문제
+    private String quiz; // 문제
 
-    public String itemName; // Item이름
-    public String penColor; // 펜 색상
+    private String itemName; // Item이름
+    private String penColor; // 펜 색상
+    private String penSize; // 펜, 지우개 두께
 
     public ChatMsg() {}
 
@@ -29,31 +30,79 @@ public class ChatMsg {
         return code;
     }
 
-    public String getUserName() {
-        return userName;
-    }
-
-    public String getRoomName() {
-        return roomName;
-    }
-
-    public String getRoomNumofPeo() {
-        return roomNumofPeo;
-    }
-
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getUserName() {
+        return userName;
     }
 
     public void setUserName(String userName) {
         this.userName = userName;
     }
 
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) {
+        this.data = data;
+    }
+
+    public String getRoomName() {
+        return roomName;
+    }
+
     public void setRoomName(String roomName) {
         this.roomName = roomName;
     }
 
+    public String getRoomNumofPeo() {
+        return roomNumofPeo;
+    }
+
     public void setRoomNumofPeo(String roomNumofPeo) {
         this.roomNumofPeo = roomNumofPeo;
+    }
+
+    public String getRoomId() {
+        return roomId;
+    }
+
+    public void setRoomId(String roomId) {
+        this.roomId = roomId;
+    }
+
+    public String getQuiz() {
+        return quiz;
+    }
+
+    public void setQuiz(String quiz) {
+        this.quiz = quiz;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public String getPenColor() {
+        return penColor;
+    }
+
+    public void setPenColor(String penColor) {
+        this.penColor = penColor;
+    }
+
+    public String getPenSize() {
+        return penSize;
+    }
+
+    public void setPenSize(String penSize) {
+        this.penSize = penSize;
     }
 }
