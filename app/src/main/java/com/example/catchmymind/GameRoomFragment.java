@@ -69,16 +69,13 @@ public class GameRoomFragment extends Fragment implements Serializable {
             RoomSettingDialogFragment roomSettingDialogFragment = RoomSettingDialogFragment.getInstance();
 
             roomSettingDialogFragment.show(getParentFragmentManager(), "Create Room");
-            roomSettingDialogFragment.setDialogResult(new RoomSettingDialogFragment.RoomSettingResult() {
-                @Override
-                public void finish(String roomName, String roomNumofPeo, String roomId) {
-                    Room room = new Room(roomName, roomNumofPeo, roomId);
-                    Log.d("GameRoom6 : ", room.getRoomName());
-                    Log.d("GameRoom6:", room.getRoomNumofPeo());
-                    Log.d("GameRoom6:", room.getRoomId());
-                    roomList.add(room);
-                    gameRoomRecyclerAdapter.notifyDataSetChanged();
-                }
+            roomSettingDialogFragment.setDialogResult((roomName, roomNumofPeo, roomId) -> {
+                Room room = new Room(roomName, roomNumofPeo, roomId);
+                Log.d("GameRoom6 : ", room.getRoomName());
+                Log.d("GameRoom6:", room.getRoomNumofPeo());
+                Log.d("GameRoom6:", room.getRoomId());
+                roomList.add(room);
+                gameRoomRecyclerAdapter.notifyDataSetChanged();
             });
         });
     }

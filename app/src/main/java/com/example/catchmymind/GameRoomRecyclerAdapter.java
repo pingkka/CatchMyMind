@@ -43,8 +43,6 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-//        String room = rooms.get(position);
-//        String roomNumofPeo = rooms.get(position);
         holder.roomName.setText(rooms.get(position).roomName);
         holder.roomNumofPeo.setText(rooms.get(position).roomNumofPeo);
     }
