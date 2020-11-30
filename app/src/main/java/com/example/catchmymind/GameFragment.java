@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -29,7 +30,7 @@ public class GameFragment extends Fragment {
     private LayoutChatBinding chatBinding;
 
     // int countdown = 90; // 카운트다운 시간 선언
-    int countdown = 5; // 테스트 용 카운트다운 시간 선언
+    int countdown = 20; // 테스트 용 카운트다운 시간 선언
     Timer timer = null; // 타이머 선언
     TimerTask timerTask = null; // TimerTask 선언
 
@@ -48,6 +49,11 @@ public class GameFragment extends Fragment {
         binding = FragmentGameBinding.inflate(inflater, container, false);
         drawBinding = LayoutDrawBinding.bind(binding.getRoot());
         chatBinding = LayoutChatBinding.bind(binding.getRoot());
+
+        MyView myView = new MyView(getContext());
+        LinearLayout stage = binding.layoutPaintmap;
+        stage.addView(myView);
+
         View view = binding.getRoot();
 
         return view;

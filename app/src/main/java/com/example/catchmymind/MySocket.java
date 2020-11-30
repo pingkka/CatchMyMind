@@ -14,9 +14,11 @@ public class MySocket extends Socket {
 
     private String userName;
     private String roomID;
-    private static final String ip_addr = "10.0.2.2"; // Emulator PC의 127.0.0.1
-//    private static final String ip_addr = "192.168.123.100"; // 실제 Phone으로 테스트 할 때 설정.
+    //private static final String ip_addr = "10.0.2.2"; // Emulator PC의 127.0.0.1
+    //private static final String ip_addr = "192.168.123.100"; // 실제 Phone으로 테스트 할 때 설정. 경진
+    private static final String ip_addr = "192.168.0.4"; // 실제 Phone으로 테스트 할 때 설정. 수연
     private static final int port_no = 30000;
+
     private static ObjectInputStream myOis;
     private static ObjectOutputStream myOos;
 
@@ -49,9 +51,9 @@ public class MySocket extends Socket {
     }
 
     public synchronized static MySocket getInstance() throws IOException {
-        if(socket == null) {
+        if (socket == null) {
             synchronized (MySocket.class) {
-                if(socket == null) {
+                if (socket == null) {
                     socket = new MySocket(ip_addr, port_no);
                     myOos = new ObjectOutputStream(socket.getOutputStream());
                     myOis = new ObjectInputStream(socket.getInputStream());
