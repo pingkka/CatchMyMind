@@ -27,15 +27,21 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
     private String roomName;
     private String roomNumofPeo;
 
-    private Socket socket;
-    private ObjectInputStream ois;
-    private ObjectOutputStream oos;
+    public ObjectInputStream ois;
+    public ObjectOutputStream oos;
+    public String userName;
 
     public RoomSettingDialogFragment() {
     }
 
-    public static RoomSettingDialogFragment getInstance() {
-        RoomSettingDialogFragment roomSettingDialogFragment = new RoomSettingDialogFragment();
+    public RoomSettingDialogFragment(String userName, ObjectInputStream ois, ObjectOutputStream oos) {
+        this.userName = userName;
+        this.ois = ois;
+        this.oos = oos;
+    }
+
+    public static RoomSettingDialogFragment getInstance(String userName, ObjectInputStream ois, ObjectOutputStream oos) {
+        RoomSettingDialogFragment roomSettingDialogFragment = new RoomSettingDialogFragment(userName, ois, oos);
         return roomSettingDialogFragment;
     }
 
@@ -55,15 +61,6 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
             if(!roomName.equals("")) {
                 createRoom();
                 dismiss();
-                new Thread() {
-                    public void run() {
-                        try {
-                            socket.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                };
             }
             else
                 Toast.makeText(requireContext(),"입력해주세요",Toast.LENGTH_SHORT).show();
@@ -94,25 +91,13 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
     public void createRoom() {
         new Thread() {
             public void run() {
-                try {
-//                    socket = MySocket.getInstance();
-                    oos = new ObjectOutputStream(socket.getOutputStream());
-                    oos.flush();
-                    ois = new ObjectInputStream(socket.getInputStream());
-
-                    Log.d("socket : ", ois.toString());
-                    Log.d("socket : ", oos.toString());
-
-                    ChatMsg obj = new ChatMsg();
-                    obj.setCode("300");
-                    obj.setUserName("username");
-                    obj.setRoomName(roomName);
-                    obj.setRoomNumofPeo(roomNumofPeo);
-                    SendChatMsg(obj);
-                    DoReceive(); // Server에서 읽는 Thread 실행
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                ChatMsg obj = new ChatMsg();
+                obj.setCode("300");
+                obj.setUserName(userName);
+                obj.setRoomName(roomName);
+                obj.setRoomNumofPeo(roomNumofPeo);
+                SendChatMsg(obj);
+                DoReceive(); // Server에서 읽는 Thread 실행
             }
         }.start();
     }
@@ -148,11 +133,9 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
         ChatMsg cm = new ChatMsg();
         try {
             // 여기가 문제
+            cm.setRoomName((String) ois.readObject());
             cm.setCode((String) ois.readObject());
             cm.setRoomId((String) ois.readObject());
-            Log.d("ReadChatMsg : ", cm.getCode());
-            Log.d("ReadChatMsg : ", cm.getRoomId());
-            Log.d("ReadChatMsg : ", "null");
             // cm.roomId 수신
             result.finish(cm.getRoomName(), cm.getRoomNumofPeo(), cm.getRoomId());
         } catch (ClassNotFoundException e) {

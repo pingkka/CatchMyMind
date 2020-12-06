@@ -19,21 +19,28 @@ import com.example.catchmymind.databinding.LayoutChatBinding;
 import com.example.catchmymind.databinding.LayoutDrawBinding;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class GameFragment extends Fragment {
+public class GameFragment extends Fragment implements SocketInterface{
 
     private FragmentGameBinding binding;
     private LayoutDrawBinding drawBinding;
     private LayoutChatBinding chatBinding;
 
+    private String userName;
+
+    private Socket socket;
+    private ObjectInputStream ois;
+    private ObjectOutputStream oos;
+
     // int countdown = 90; // 카운트다운 시간 선언
     int countdown = 40; // 테스트 용 카운트다운 시간 선언
     Timer timer = null; // 타이머 선언
     TimerTask timerTask = null; // TimerTask 선언
-
-    private MySocket socket;
 
     int gameStatus = 0; // 0 : 게임 시작 전, 1 : 게임 시작 후
 
@@ -43,6 +50,14 @@ public class GameFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (getArguments() != null) {
+            MySocket mySocket = (MySocket) getArguments().getSerializable("obj");
+            socket = mySocket.getSocket();
+            ois = mySocket.getOis();
+            oos = mySocket.getOos();
+            userName = mySocket.getUserName();
+        }
     }
 
     @Override
@@ -77,8 +92,7 @@ public class GameFragment extends Fragment {
             binding.progressBar.setProgress(countdown); // 현재 프로그래스바 시간 설정
 
             startTimerThread();
-
-//            send
+            GameStart();
         });
     }
 
@@ -156,69 +170,56 @@ public class GameFragment extends Fragment {
         );
     }
 
-//    public void Login() {
-//        new Thread() {
-//            public void run() {
-//                try {
-//                    Log.d("Login: ", userName);
-//                    socket = MySocket.getInstance();
-//                    socket.setUserName(userName);
-//                    oos = socket.getMyOos();
-//                    oos.flush();
-//                    ois = socket.getMyOis();
-//
-//                    Log.d("socket : ", ois.toString());
-//                    Log.d("socket : ", oos.toString());
-//
-//                    ChatMsg obj = new ChatMsg(userName,"100", "hello");
-//                    SendChatMsg(obj);
-//                    LoginStatus = true;
-//                    DoReceive(); // Server에서 읽는 Thread 실행
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }.start();
-//    }
-//
-//    // Server Message 수신
-//    public void DoReceive() {
-//        new Thread() {
-//            public void run() {
-//                ReadChatMsg();
-//            }
-//        }.start();
-//    }
-//
-//    // SendChatMsg()
-//    public void SendChatMsg(ChatMsg cm)  {
-//        new Thread() {
-//            public void run() {
-//                // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
-//                try {
-//                    oos.writeObject(cm.getCode());
-//                    oos.writeObject(cm.getUserName());
-//                    oos.writeObject(cm.getData());
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }.start();
-//    }
-//
-//    // ChatMsg 를 읽어서 Return, Java 호환성 문제로 field별로 수신해서 ChatMsg 로 만들어 Return
-//    public ChatMsg ReadChatMsg()  {
-//        ChatMsg cm = new ChatMsg("","","");
-//        try {
-//            cm.setCode((String) ois.readObject());
-//            cm.setUserName((String) ois.readObject());
-//            cm.setData((String) ois.readObject());
-//            result.finish(cm.getUserName(), cm.getCode());
-//        } catch (ClassNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return cm;
-//    }
+    public void GameStart() {
+        new Thread() {
+            public void run() {
+                ChatMsg obj = new ChatMsg(userName, "500", "RoomId + gamestart");
+                SendChatMsg(obj);
+                DoReceive(); // Server에서 읽는 Thread 실행
+            }
+        }.start();
+    }
+
+    // Server Message 수신
+    @Override
+    public synchronized void DoReceive() {
+        new Thread() {
+            public void run() {
+                ReadChatMsg();
+            }
+        }.start();
+    }
+
+    // SendChatMsg()
+    @Override
+    public synchronized void SendChatMsg(ChatMsg cm) {
+        new Thread() {
+            public void run() {
+                // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
+                try {
+                    oos.writeObject(cm.getCode());
+                    oos.writeObject(cm.getUserName());
+                    oos.writeObject(cm.getData());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+    }
+
+    @Override
+    public synchronized ChatMsg ReadChatMsg() {
+        ChatMsg cm = new ChatMsg("", "", "");
+        try {
+            cm.setCode((String) ois.readObject());
+            cm.setUserName((String) ois.readObject());
+            cm.setData((String) ois.readObject());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return cm;
+    }
+
 }

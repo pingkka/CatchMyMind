@@ -22,24 +22,22 @@ import java.io.Serializable;
 import java.net.Socket;
 
 
-public class AppStartFragment extends Fragment implements Serializable {
+public class AppStartFragment extends Fragment {
 
     private FragmentAppStartBinding binding;
-    public ObjectOutputStream oos;
-    public ObjectInputStream ois;
-    private Socket socket;
-
+    private String userName;
     private static final String ip_addr = "10.0.2.2"; // Emulator PC의 127.0.0.1
-//    private static final String ip_addr = "192.168.123.100"; // 실제 Phone으로 테스트 할 때 설정. 경진
+    //private static final String ip_addr = "192.168.123.100"; // 실제 Phone으로 테스트 할 때 설정. 경진
     //private static final String ip_addr = "192.168.0.4"; // 실제 Phone으로 테스트 할 때 설정. 수연
     private static final int port_no = 30000;
 
-    public AppStartFragment() {
-    }
+    //private MySocket socket;
+    public Socket socket;
+    public ObjectInputStream ois;
+    public ObjectOutputStream oos;
+    public boolean LoginStatus = false;
 
-    public static AppStartFragment getInstance() {
-        AppStartFragment appStartFragment = new AppStartFragment();
-        return appStartFragment;
+    public AppStartFragment() {
     }
 
     @Override
@@ -70,25 +68,19 @@ public class AppStartFragment extends Fragment implements Serializable {
             }
         }.start();
     }
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         binding.btnStart.setOnClickListener(view1 -> {
             LoginDialogFragment loginDialog = LoginDialogFragment.getInstance(ois, oos);
             loginDialog.show(getParentFragmentManager(), "login");
-            loginDialog.setDialogResult((name, code) -> {
+            loginDialog.setDialogResult((String name, String code) -> {
                 if(code.equals("100")) {
-                    GameRoomFragment gameRoomFragment = GameRoomFragment.getInstance(name, ois, oos);
+                    Bundle args = new Bundle();
+                    MySocket mySocket = new MySocket(name, this.socket, this.ois, this.oos);
+                    args.putSerializable("obj", mySocket);
 
-                    getParentFragmentManager().beginTransaction().replace(R.id.fg_app_start, gameRoomFragment).commit();
-//                    GameRoomFragment gameRoomFragment = new GameRoomFragment();
-//                    Bundle args = new Bundle();
-//                   MySocket mySocket = new MySocket(name, this.ois, this.oos);
-//                    args.putSerializable("socket", mySocket);
-
-
-//                    getActivity().runOnUiThread(() -> Navigation.findNavController(requireView()).navigate(R.id.action_appStartFragment_to_gameRoomFragment, args));
+                    getActivity().runOnUiThread(() -> Navigation.findNavController(requireView()).navigate(R.id.action_appStartFragment_to_gameRoomFragment, args));
                 }
             });
         });

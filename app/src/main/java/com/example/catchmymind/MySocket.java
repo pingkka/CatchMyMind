@@ -8,9 +8,16 @@ import java.net.Socket;
 public class MySocket implements Serializable {
 
     public String userName;
-//    private Socket socket;
+    public Socket socket;
     public ObjectInputStream ois;
     public ObjectOutputStream oos;
+
+    public MySocket(String userName, Socket socket, ObjectInputStream ois, ObjectOutputStream oos) {
+        this.userName = userName;
+        this.socket = socket;
+        this.ois = ois;
+        this.oos = oos;
+    }
 
     public MySocket(String userName, ObjectInputStream ois, ObjectOutputStream oos) {
         this.userName = userName;
@@ -18,26 +25,19 @@ public class MySocket implements Serializable {
         this.oos = oos;
     }
 
-//    public MySocket(String userName, Socket socket, ObjectInputStream ois, ObjectOutputStream oos) {
-//        this.userName = userName;
-//        this.socket = socket;
-//        this.ois = ois;
-//        this.oos = oos;
-//    }
+    public String getUserName() {
+        return userName;
+    }
 
-//    public String getUserName() {
-//        return userName;
-//    }
-//
-////    public Socket getSocket() {
-////        return socket;
-////    }
-//
-//    public ObjectInputStream getOis() {
-//        return ois;
-//    }
-//
-//    public ObjectOutputStream getOos() {
-//        return oos;
-//    }
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public ObjectInputStream getOis() {
+        return ois;
+    }
+
+    public ObjectOutputStream getOos() {
+        return oos;
+    }
 }

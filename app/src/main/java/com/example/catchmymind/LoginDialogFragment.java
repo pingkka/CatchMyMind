@@ -21,18 +21,15 @@ import java.net.Socket;
 
 import kotlin.jvm.Synchronized;
 
-public class LoginDialogFragment extends DialogFragment implements SocketInterface {
+public class LoginDialogFragment extends DialogFragment implements Serializable, SocketInterface {
     private LoginDialogBinding binding;
-    LoginResult result;
+    private LoginResult result;
 
     private String userName;
 
-    private ObjectInputStream ois;
-    private ObjectOutputStream oos;
+    public ObjectInputStream ois;
+    public ObjectOutputStream oos;
     public boolean LoginStatus = false;
-
-    public LoginDialogFragment() {
-    }
 
     public LoginDialogFragment(ObjectInputStream ois, ObjectOutputStream oos) {
         this.ois = ois;
@@ -43,6 +40,7 @@ public class LoginDialogFragment extends DialogFragment implements SocketInterfa
         LoginDialogFragment loginDialogFragment = new LoginDialogFragment(ois, oos);
         return loginDialogFragment;
     }
+
 
     @Nullable
     @Override
@@ -82,14 +80,6 @@ public class LoginDialogFragment extends DialogFragment implements SocketInterfa
     public void Login() {
         new Thread() {
             public void run() {
-                Log.d("Login: ", userName);
-//                socket = MySocket.getInstance();
-//                socket.setUserName(userName);
-//                socket = new Socket(ip_addr, port_no);
-//                oos = new ObjectOutputStream(socket.getOutputStream());
-//                oos.flush();
-//                ois = new ObjectInputStream(socket.getInputStream());
-
                 ChatMsg obj = new ChatMsg(userName, "100", "hello");
                 SendChatMsg(obj);
                 LoginStatus = true;
