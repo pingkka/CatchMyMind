@@ -18,7 +18,8 @@
         android:id="@+id/gameRoomFragment"
         android:name="com.example.catchmymind.GameRoomFragment"
         android:label="fragment_game_room"
-        tools:layout="@layout/fragment_game_room" >
+        tools:layout="@layout/fragment_game_room"
+        app:startDestination="@id/action_gameRoomFragment_to_appStartFragment">
         <action
             android:id="@+id/action_gameRoomFragment_to_appStartFragment"
             app:destination="@id/appStartFragment" />
@@ -30,7 +31,8 @@
         android:id="@+id/gameFragment"
         android:name="com.example.catchmymind.GameFragment"
         android:label="fragment_game"
-        tools:layout="@layout/fragment_game" >
+        tools:layout="@layout/fragment_game"
+        app:startDestination="@id/action_gameFragment_to_gameRoomFragment">
         <action
             android:id="@+id/action_gameFragment_to_gameRoomFragment"
             app:destination="@id/gameRoomFragment" />

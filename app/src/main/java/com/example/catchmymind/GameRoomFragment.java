@@ -8,10 +8,13 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.catchmymind.databinding.FragmentGameRoomBinding;
 
@@ -19,25 +22,46 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.Socket;
 import java.util.ArrayList;
 
-public class GameRoomFragment extends Fragment implements Serializable {
+public class GameRoomFragment extends Fragment implements Serializable, SocketInterface {
     private ArrayList<Room> roomList = new ArrayList<>();
     private FragmentGameRoomBinding binding;
 
-    private MySocket socket;
+    private String userName;
+
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
 
     public GameRoomFragment() {
     }
 
+    public GameRoomFragment(String userName, ObjectInputStream ois, ObjectOutputStream oos) {
+        this.userName = userName;
+        this.ois = ois;
+        this.oos = oos;
+    }
+
+    public static GameRoomFragment getInstance(String userName, ObjectInputStream ois, ObjectOutputStream oos) {
+        GameRoomFragment gameRoomFragment = new GameRoomFragment(userName, ois, oos);
+        return gameRoomFragment;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        for (int i = 0; i < 8; i++) {
-//            roomList.add(String.format("Room %d", i + 1));
+//        if(getArguments() != null) {
+//            MySocket mySocket = (MySocket) getArguments().getSerializable("socket");
+////            socket = mySocket.getSocket();
+//            ois = mySocket.ois;
+//            oos = mySocket.oos;
+//            userName = mySocket.userName;
+////            Log.d("onCreate:", ois.toString());
+////            Log.d("onCreate:", oos.toString());
+////            Log.d("onCreate:", userName);
 //        }
+
         int num[] = {2, 4, 8, 4};
         for (int i = 0; i < 4; i++) {
             roomList.add(new Room(String.format("Room %d", i + 1), Integer.toString(num[i]), Integer.toString(i)));
@@ -49,13 +73,6 @@ public class GameRoomFragment extends Fragment implements Serializable {
                              Bundle savedInstanceState) {
         binding = FragmentGameRoomBinding.inflate(inflater, container, false);
         View view = binding.getRoot();
-
-        return view;
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
 
         binding.rvGameRoom.setLayoutManager(new LinearLayoutManager(requireContext()));
         GameRoomRecyclerAdapter gameRoomRecyclerAdapter = new GameRoomRecyclerAdapter(roomList);
@@ -71,7 +88,7 @@ public class GameRoomFragment extends Fragment implements Serializable {
             roomSettingDialogFragment.show(getParentFragmentManager(), "Create Room");
             roomSettingDialogFragment.setDialogResult((roomName, roomNumofPeo, roomId) -> {
                 Room room = new Room(roomName, roomNumofPeo, roomId);
-                Log.d("GameRoom6 : ", room.getRoomName());
+                Log.d("GameRoom6 : ", "null");
                 Log.d("GameRoom6:", room.getRoomNumofPeo());
                 Log.d("GameRoom6:", room.getRoomId());
                 roomList.add(room);
@@ -79,28 +96,22 @@ public class GameRoomFragment extends Fragment implements Serializable {
             });
         });
 
+        return view;
     }
 
     public void Logout() {
         new Thread() {
             public void run() {
-                try {
-                    socket = MySocket.getInstance();
-                    oos = socket.getMyOos();
-                    oos.flush();
-                    ois = socket.getMyOis();
-                    ChatMsg obj = new ChatMsg(socket.getUserName(),"400", "bye");
-                    SendChatMsg(obj);
-                    DoReceive(); // Server에서 읽는 Thread 실행
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                ChatMsg obj = new ChatMsg(userName,"400", "bye");
+                SendChatMsg(obj);
+                DoReceive(); // Server에서 읽는 Thread 실행
             }
         }.start();
     }
 
     // Server Message 수신
-    public void DoReceive() {
+    @Override
+    public synchronized void DoReceive() {
         new Thread() {
             public void run() {
                 ReadChatMsg();
@@ -109,7 +120,8 @@ public class GameRoomFragment extends Fragment implements Serializable {
     }
 
     // SendChatMsg()
-    public void SendChatMsg(ChatMsg cm)  {
+    @Override
+    public synchronized void SendChatMsg(ChatMsg cm)  {
         new Thread() {
             public void run() {
                 // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
@@ -117,6 +129,7 @@ public class GameRoomFragment extends Fragment implements Serializable {
                     oos.writeObject(cm.getCode());
                     oos.writeObject(cm.getUserName());
                     oos.writeObject(cm.getData());
+//                    oos.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -125,10 +138,10 @@ public class GameRoomFragment extends Fragment implements Serializable {
     }
 
     // ChatMsg 를 읽어서 Return, Java 호환성 문제로 field별로 수신해서 ChatMsg 로 만들어 Return
-    public ChatMsg ReadChatMsg()  {
+    @Override
+    public synchronized ChatMsg ReadChatMsg()  {
         ChatMsg cm = new ChatMsg("","","");
         try {
-            // 여기가 문제
             cm.setCode((String) ois.readObject());
             cm.setUserName((String) ois.readObject());
             cm.setData((String) ois.readObject());
@@ -150,4 +163,6 @@ public class GameRoomFragment extends Fragment implements Serializable {
         super.onDestroyView();
         binding = null;
     }
+
+
 }

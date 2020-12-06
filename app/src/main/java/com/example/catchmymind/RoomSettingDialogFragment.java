@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.Socket;
 
 public class RoomSettingDialogFragment extends DialogFragment implements Serializable {
     private RoomSettingResult result;
@@ -26,7 +27,7 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
     private String roomName;
     private String roomNumofPeo;
 
-    private MySocket socket;
+    private Socket socket;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
 
@@ -54,6 +55,15 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
             if(!roomName.equals("")) {
                 createRoom();
                 dismiss();
+                new Thread() {
+                    public void run() {
+                        try {
+                            socket.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
             }
             else
                 Toast.makeText(requireContext(),"입력해주세요",Toast.LENGTH_SHORT).show();
@@ -85,13 +95,17 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
         new Thread() {
             public void run() {
                 try {
-                    socket = MySocket.getInstance();
-                    oos = socket.getMyOos();
+//                    socket = MySocket.getInstance();
+                    oos = new ObjectOutputStream(socket.getOutputStream());
                     oos.flush();
-                    ois = socket.getMyOis();
+                    ois = new ObjectInputStream(socket.getInputStream());
+
+                    Log.d("socket : ", ois.toString());
+                    Log.d("socket : ", oos.toString());
+
                     ChatMsg obj = new ChatMsg();
                     obj.setCode("300");
-                    obj.setUserName(socket.getUserName());
+                    obj.setUserName("username");
                     obj.setRoomName(roomName);
                     obj.setRoomNumofPeo(roomNumofPeo);
                     SendChatMsg(obj);
@@ -104,7 +118,7 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
     }
 
     // Server Message 수신
-    public void DoReceive() {
+    public synchronized void DoReceive() {
         new Thread() {
             public void run() {
                 ReadChatMsg();
@@ -113,7 +127,7 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
     }
 
     // SendChatMsg() : 방이름, 인원수를 서버에게 전달
-    public void SendChatMsg(ChatMsg cm)  {
+    public synchronized void SendChatMsg(ChatMsg cm)  {
         new Thread() {
             public void run() {
                 // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
@@ -130,7 +144,7 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
     }
 
     // ChatMsg 를 읽어서 Return, Java 호환성 문제로 field별로 수신해서 ChatMsg 로 만들어 Return
-    public ChatMsg ReadChatMsg()  {
+    public synchronized ChatMsg ReadChatMsg()  {
         ChatMsg cm = new ChatMsg();
         try {
             // 여기가 문제
@@ -138,7 +152,7 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
             cm.setRoomId((String) ois.readObject());
             Log.d("ReadChatMsg : ", cm.getCode());
             Log.d("ReadChatMsg : ", cm.getRoomId());
-            Log.d("ReadChatMsg : ", cm.getUserName());
+            Log.d("ReadChatMsg : ", "null");
             // cm.roomId 수신
             result.finish(cm.getRoomName(), cm.getRoomNumofPeo(), cm.getRoomId());
         } catch (ClassNotFoundException e) {

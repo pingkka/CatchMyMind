@@ -85,13 +85,13 @@ public class GameScoreDialogFragment extends DialogFragment implements Serializa
         new Thread() {
             public void run() {
                 try {
-                    socket = MySocket.getInstance();
-                    oos = socket.getMyOos();
+//                    socket = MySocket.getInstance();
+//                    oos = socket.getMyOos();
                     oos.flush();
-                    ois = socket.getMyOis();
+//                    ois = socket.getMyOis();
                     ChatMsg obj = new ChatMsg();
                     obj.setCode("300");
-                    obj.setUserName(socket.getUserName());
+//                    obj.setUserName(socket.getUserName());
                     SendChatMsg(obj);
                     DoReceive(); // Server에서 읽는 Thread 실행
                 } catch (IOException e) {
@@ -102,7 +102,7 @@ public class GameScoreDialogFragment extends DialogFragment implements Serializa
     }
 
     // Server Message 수신
-    public void DoReceive() {
+    public synchronized void DoReceive() {
         new Thread() {
             public void run() {
                 ReadChatMsg();
@@ -111,7 +111,7 @@ public class GameScoreDialogFragment extends DialogFragment implements Serializa
     }
 
     // SendChatMsg() : 방이름, 인원수를 서버에게 전달
-    public void SendChatMsg(ChatMsg cm)  {
+    public synchronized void SendChatMsg(ChatMsg cm)  {
         new Thread() {
             public void run() {
                 // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
@@ -126,7 +126,7 @@ public class GameScoreDialogFragment extends DialogFragment implements Serializa
     }
 
     // ChatMsg 를 읽어서 Return, Java 호환성 문제로 field별로 수신해서 ChatMsg 로 만들어 Return
-    public ChatMsg ReadChatMsg()  {
+    public synchronized ChatMsg ReadChatMsg()  {
         ChatMsg cm = new ChatMsg();
         try {
             // 여기가 문제

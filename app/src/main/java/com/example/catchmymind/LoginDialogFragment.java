@@ -17,14 +17,16 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.Socket;
 
-public class LoginDialogFragment extends DialogFragment implements Serializable {
+import kotlin.jvm.Synchronized;
+
+public class LoginDialogFragment extends DialogFragment implements SocketInterface {
     private LoginDialogBinding binding;
     LoginResult result;
 
     private String userName;
 
-    private MySocket socket;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
     public boolean LoginStatus = false;
@@ -32,8 +34,13 @@ public class LoginDialogFragment extends DialogFragment implements Serializable 
     public LoginDialogFragment() {
     }
 
-    public static LoginDialogFragment getInstance() {
-        LoginDialogFragment loginDialogFragment = new LoginDialogFragment();
+    public LoginDialogFragment(ObjectInputStream ois, ObjectOutputStream oos) {
+        this.ois = ois;
+        this.oos = oos;
+    }
+
+    public static LoginDialogFragment getInstance(ObjectInputStream ois, ObjectOutputStream oos) {
+        LoginDialogFragment loginDialogFragment = new LoginDialogFragment(ois, oos);
         return loginDialogFragment;
     }
 
@@ -46,12 +53,11 @@ public class LoginDialogFragment extends DialogFragment implements Serializable 
         binding.btnLogin.setOnClickListener(view1 -> {
             // 로그인
             userName = binding.etLogin.getText().toString();
-            if(!userName.equals("")) {
+            if (!userName.equals("")) {
                 Login();
                 dismiss();
-            }
-            else
-                Toast.makeText(requireContext(),"입력해주세요",Toast.LENGTH_SHORT).show();
+            } else
+                Toast.makeText(requireContext(), "입력해주세요", Toast.LENGTH_SHORT).show();
         });
 
         return view;
@@ -76,27 +82,26 @@ public class LoginDialogFragment extends DialogFragment implements Serializable 
     public void Login() {
         new Thread() {
             public void run() {
-                try {
-                    socket = MySocket.getInstance();
-                    Log.d("Login: ", userName);
-                    socket.setUserName(userName);
-                    oos = socket.getMyOos();
-                    oos.flush();
-                    ois = socket.getMyOis();
+                Log.d("Login: ", userName);
+//                socket = MySocket.getInstance();
+//                socket.setUserName(userName);
+//                socket = new Socket(ip_addr, port_no);
+//                oos = new ObjectOutputStream(socket.getOutputStream());
+//                oos.flush();
+//                ois = new ObjectInputStream(socket.getInputStream());
 
-                    ChatMsg obj = new ChatMsg(userName,"100", "hello");
-                    SendChatMsg(obj);
-                    LoginStatus = true;
-                    DoReceive(); // Server에서 읽는 Thread 실행
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                ChatMsg obj = new ChatMsg(userName, "100", "hello");
+                SendChatMsg(obj);
+                LoginStatus = true;
+                DoReceive(); // Server에서 읽는 Thread 실행
             }
         }.start();
     }
 
+
     // Server Message 수신
-    public void DoReceive() {
+    @Override
+    public synchronized void DoReceive() {
         new Thread() {
             public void run() {
                 ReadChatMsg();
@@ -105,7 +110,8 @@ public class LoginDialogFragment extends DialogFragment implements Serializable 
     }
 
     // SendChatMsg()
-    public void SendChatMsg(ChatMsg cm)  {
+    @Override
+    public synchronized void SendChatMsg(ChatMsg cm) {
         new Thread() {
             public void run() {
                 // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
@@ -121,13 +127,14 @@ public class LoginDialogFragment extends DialogFragment implements Serializable 
     }
 
     // ChatMsg 를 읽어서 Return, Java 호환성 문제로 field별로 수신해서 ChatMsg 로 만들어 Return
-    public ChatMsg ReadChatMsg()  {
-        ChatMsg cm = new ChatMsg("","","");
+    @Override
+    public synchronized ChatMsg ReadChatMsg() {
+        ChatMsg cm = new ChatMsg("", "", "");
         try {
             cm.setCode((String) ois.readObject());
             cm.setUserName((String) ois.readObject());
             cm.setData((String) ois.readObject());
-            result.finish(cm.getUserName(), cm.getCode());
+            result.finish(userName, cm.getCode());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
