@@ -25,7 +25,7 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
     private RoomSettingDialogBinding binding;
 
     private String roomName;
-    private String roomNumofPeo;
+    private String maxNumofPeo;
 
     public ObjectInputStream ois;
     public ObjectOutputStream oos;
@@ -57,7 +57,7 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
 
         binding.btnCreate.setOnClickListener(view12 -> {
             roomName = binding.etRoomName.getText().toString();
-            roomNumofPeo = binding.spSetNumOfPeo.getSelectedItem().toString();
+            maxNumofPeo = binding.spSetNumOfPeo.getSelectedItem().toString();
             if(!roomName.equals("")) {
                 createRoom();
                 dismiss();
@@ -77,7 +77,7 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
     }
 
     public interface RoomSettingResult {
-        void finish(String roomName, String roomNumofPeo, String roomId);
+        void finish(String roomName, String maxNumofPeo, String roomId);
     }
 
     @Override
@@ -93,9 +93,8 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
             public void run() {
                 ChatMsg obj = new ChatMsg();
                 obj.setCode("300");
-                obj.setUserName(userName);
                 obj.setRoomName(roomName);
-                obj.setRoomNumofPeo(roomNumofPeo);
+                obj.setMaxNumofPeo(maxNumofPeo);
                 SendChatMsg(obj);
                 DoReceive(); // Server에서 읽는 Thread 실행
             }
@@ -118,9 +117,8 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
                 // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
                 try {
                     oos.writeObject(cm.getCode());
-                    oos.writeObject(cm.getUserName());
                     oos.writeObject(cm.getRoomName());
-                    oos.writeObject(cm.getRoomNumofPeo());
+                    oos.writeObject(cm.getMaxNumofPeo());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -132,12 +130,12 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
     public synchronized ChatMsg ReadChatMsg()  {
         ChatMsg cm = new ChatMsg();
         try {
-            // 여기가 문제
-            cm.setRoomName((String) ois.readObject());
             cm.setCode((String) ois.readObject());
             cm.setRoomId((String) ois.readObject());
-            // cm.roomId 수신
-            result.finish(cm.getRoomName(), cm.getRoomNumofPeo(), cm.getRoomId());
+            Log.d("roomSetting:", roomName);
+            Log.d("roomSetting:", maxNumofPeo);
+            Log.d("roomSetting:", cm.getRoomId());
+            result.finish(roomName, maxNumofPeo, cm.getRoomId());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

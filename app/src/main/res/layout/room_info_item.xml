@@ -27,7 +27,7 @@
                 android:textSize="16sp"></TextView>
 
             <TextView
-                android:id="@+id/tv_room_num_of_peo"
+                android:id="@+id/tv_room_max_num_of_peo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="방 인원"

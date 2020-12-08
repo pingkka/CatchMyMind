@@ -1,5 +1,6 @@
 package com.example.catchmymind;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.navigation.Navigation;
@@ -19,11 +21,13 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecyclerAdapter.ViewHolder> implements SocketInterface {
+    private Context context;
     private ArrayList<Room> rooms;
     private View view;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
     private String userName;
+    private String code;
 
 
     public GameRoomRecyclerAdapter(ArrayList<Room> list, String userName, ObjectInputStream ois, ObjectOutputStream oos) {
@@ -34,15 +38,19 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
 
     }
 
+    public void setRooms(ArrayList<Room> rooms) {
+        this.rooms = rooms;
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView roomName;
-        TextView roomNumofPeo;
+        TextView maxNumofPeo;
         Button btnEnterRoom;
 
         ViewHolder(View itemView) {
             super(itemView);
             roomName = itemView.findViewById(R.id.tv_room_name);
-            roomNumofPeo = itemView.findViewById(R.id.tv_room_num_of_peo);
+            maxNumofPeo = itemView.findViewById(R.id.tv_room_max_num_of_peo);
             btnEnterRoom = itemView.findViewById(R.id.btn_enter_room);
         }
     }
@@ -50,8 +58,9 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
+        context = parent.getContext();
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
 
         view = inflater.inflate(R.layout.room_info_item, parent, false);
         GameRoomRecyclerAdapter.ViewHolder viewHolder = new GameRoomRecyclerAdapter.ViewHolder(view);
@@ -62,15 +71,9 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.roomName.setText(rooms.get(position).getRoomName());
-        holder.roomNumofPeo.setText(rooms.get(position).getRoomNumofPeo());
+        holder.maxNumofPeo.setText(rooms.get(position).getMaxNumofPeo());
         holder.btnEnterRoom.setOnClickListener(v -> {
-            EnterRoom();
-
-            // if enter 성공시 실행
-            Bundle args = new Bundle();
-            MySocket mySocket = new MySocket(userName, this.ois, this.oos);
-            args.putSerializable("obj", mySocket);
-            Navigation.findNavController(view).navigate(R.id.action_gameRoomFragment_to_gameFragment, args);
+            EnterRoom(rooms.get(position).getRoomId());
         });
     }
 
@@ -79,11 +82,13 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
         return rooms.size();
     }
 
-    public void EnterRoom() {
+    public void EnterRoom(String roomId) {
+        ChatMsg cm = new ChatMsg();
         new Thread() {
             public void run() {
-                ChatMsg obj = new ChatMsg(userName, "301", "enter");
-                SendChatMsg(obj);
+                cm.setCode("301");
+                cm.setRoomId(roomId);
+                SendChatMsg(cm);
                 DoReceive(); // Server에서 읽는 Thread 실행
             }
         }.start();
@@ -107,8 +112,7 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
                 // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
                 try {
                     oos.writeObject(cm.getCode());
-                    oos.writeObject(cm.getUserName());
-                    oos.writeObject(cm.getData());
+                    oos.writeObject(cm.getRoomId());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -118,11 +122,19 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
 
     @Override
     public synchronized ChatMsg ReadChatMsg() {
-        ChatMsg cm = new ChatMsg("", "", "");
+        ChatMsg cm = new ChatMsg();
         try {
             cm.setCode((String) ois.readObject());
-            cm.setUserName((String) ois.readObject());
-            cm.setData((String) ois.readObject());
+
+            if(cm.getCode().equals("303")) { // 방 입장 성공
+                // if enter 성공시 실행
+                Log.d("gameRoom: ", cm.getCode());
+                Bundle args = new Bundle();
+                MySocket mySocket = new MySocket(userName, this.ois, this.oos);
+                args.putSerializable("obj", mySocket);
+
+                ((Activity)context).runOnUiThread(() -> Navigation.findNavController(view).navigate(R.id.action_gameRoomFragment_to_gameFragment, args));
+            }
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

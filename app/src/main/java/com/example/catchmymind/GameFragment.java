@@ -32,8 +32,6 @@ public class GameFragment extends Fragment implements SocketInterface{
     private LayoutChatBinding chatBinding;
 
     private String userName;
-
-    private Socket socket;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
 
@@ -53,7 +51,6 @@ public class GameFragment extends Fragment implements SocketInterface{
 
         if (getArguments() != null) {
             MySocket mySocket = (MySocket) getArguments().getSerializable("obj");
-            socket = mySocket.getSocket();
             ois = mySocket.getOis();
             oos = mySocket.getOos();
             userName = mySocket.getUserName();
