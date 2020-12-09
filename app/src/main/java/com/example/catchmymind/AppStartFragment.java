@@ -27,7 +27,7 @@ public class AppStartFragment extends Fragment {
     private FragmentAppStartBinding binding;
     private String userName;
     private static final String ip_addr = "10.0.2.2"; // Emulator PC의 127.0.0.1
-    //private static final String ip_addr = "192.168.123.100"; // 실제 Phone으로 테스트 할 때 설정. 경진
+//    private static final String ip_addr = "192.168.123.105"; // 실제 Phone으로 테스트 할 때 설정. 경진
     //private static final String ip_addr = "192.168.0.4"; // 실제 Phone으로 테스트 할 때 설정. 수연
     private static final int port_no = 30000;
 
@@ -77,7 +77,7 @@ public class AppStartFragment extends Fragment {
             loginDialog.setDialogResult((String name, String code) -> {
                 if(code.equals("100")) {
                     Bundle args = new Bundle();
-                    MySocket mySocket = new MySocket(name, this.socket, this.ois, this.oos);
+                    MySocket mySocket = new MySocket(name, this.ois, this.oos);
                     args.putSerializable("obj", mySocket);
 
                     getActivity().runOnUiThread(() -> Navigation.findNavController(requireView()).navigate(R.id.action_appStartFragment_to_gameRoomFragment, args));

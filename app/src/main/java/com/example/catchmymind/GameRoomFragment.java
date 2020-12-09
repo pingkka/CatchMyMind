@@ -28,10 +28,9 @@ import java.util.ArrayList;
 public class GameRoomFragment extends Fragment implements Serializable, SocketInterface {
     private ArrayList<Room> roomList = new ArrayList<>();
     private FragmentGameRoomBinding binding;
+    private GameRoomRecyclerAdapter gameRoomRecyclerAdapter;
 
     private String userName;
-
-    private Socket socket;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
 
@@ -43,15 +42,9 @@ public class GameRoomFragment extends Fragment implements Serializable, SocketIn
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             MySocket mySocket = (MySocket) getArguments().getSerializable("obj");
-            socket = mySocket.getSocket();
             ois = mySocket.getOis();
             oos = mySocket.getOos();
             userName = mySocket.getUserName();
-        }
-
-        int num[] = {2, 4, 8, 4};
-        for (int i = 0; i < 4; i++) {
-            roomList.add(new Room(String.format("Room %d", i + 1), Integer.toString(num[i]), Integer.toString(i)));
         }
     }
 
@@ -61,16 +54,18 @@ public class GameRoomFragment extends Fragment implements Serializable, SocketIn
         binding = FragmentGameRoomBinding.inflate(inflater, container, false);
         View view = binding.getRoot();
 
+        binding.rvGameRoom.setLayoutManager(new LinearLayoutManager(requireContext()));
+        gameRoomRecyclerAdapter = new GameRoomRecyclerAdapter(roomList, userName, ois, oos);
+        binding.rvGameRoom.setAdapter(gameRoomRecyclerAdapter);
+
+        Refresh();
+
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        binding.rvGameRoom.setLayoutManager(new LinearLayoutManager(requireContext()));
-        GameRoomRecyclerAdapter gameRoomRecyclerAdapter = new GameRoomRecyclerAdapter(roomList, userName, ois, oos);
-        binding.rvGameRoom.setAdapter(gameRoomRecyclerAdapter);
 
         binding.btnBack.setOnClickListener(v -> {
             Logout();
@@ -79,19 +74,33 @@ public class GameRoomFragment extends Fragment implements Serializable, SocketIn
         binding.btnCreateRoom.setOnClickListener(view1 -> {
             RoomSettingDialogFragment roomSettingDialogFragment = RoomSettingDialogFragment.getInstance(userName, ois, oos);
             roomSettingDialogFragment.show(getParentFragmentManager(), "Create Room");
-            roomSettingDialogFragment.setDialogResult((roomName, roomNumofPeo, roomId) -> {
-                Room room = new Room(roomName, roomNumofPeo, roomId);
+            roomSettingDialogFragment.setDialogResult((roomName, maxNumofPeo, roomId) -> {
+                Room room = new Room(userName, roomName, maxNumofPeo, roomId);
                 roomList.add(room);
-                gameRoomRecyclerAdapter.notifyDataSetChanged();
+                gameRoomRecyclerAdapter.setRooms(roomList);
+                gameRoomRecyclerAdapter.EnterRoom(roomId);
             });
         });
 
+        binding.btnRefresh.setOnClickListener(v -> {
+            Refresh();
+        });
     }
 
     public void Logout() {
         new Thread() {
             public void run() {
                 ChatMsg obj = new ChatMsg(userName, "400", "bye");
+                SendChatMsg(obj);
+                DoReceive(); // Server에서 읽는 Thread 실행
+            }
+        }.start();
+    }
+
+    public void Refresh() {
+        new Thread() {
+            public void run() {
+                ChatMsg obj = new ChatMsg(userName, "700", "Refresh");
                 SendChatMsg(obj);
                 DoReceive(); // Server에서 읽는 Thread 실행
             }
@@ -118,10 +127,6 @@ public class GameRoomFragment extends Fragment implements Serializable, SocketIn
                     oos.writeObject(cm.getCode());
                     oos.writeObject(cm.getUserName());
                     oos.writeObject(cm.getData());
-
-                    Log.d("gameRoom:", cm.getCode());
-                    Log.d("gameRoom:", cm.getUserName());
-                    Log.d("gameRoom:", cm.getData());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -140,6 +145,23 @@ public class GameRoomFragment extends Fragment implements Serializable, SocketIn
 
             if (cm.getCode().equals("400")) {
                 getActivity().runOnUiThread(() -> Navigation.findNavController(requireView()).navigate(R.id.action_gameRoomFragment_to_appStartFragment));
+            }
+            else if(cm.getCode().equals("700")) {
+                Log.d("gameRoom:", "Refresh");
+                int size = ((int) ois.readObject());
+                roomList = new ArrayList<>();
+                for (int i = 0; i < size; i++) {
+                    Room room = new Room();
+                    room.setPresenter((String) ois.readObject());
+                    room.setRoomName((String) ois.readObject());
+                    room.setMaxNumofPeo((String) ois.readObject());
+                    room.setRoomId((String) ois.readObject());
+                    Log.d("gameRoom:", room.getRoomName() + ":" + room.getRoomId());
+                    roomList.add(room);
+                }
+                cm.setRoomList(roomList);
+                gameRoomRecyclerAdapter.setRooms(cm.getRoomList());
+                getActivity().runOnUiThread(() -> gameRoomRecyclerAdapter.notifyDataSetChanged());
             }
         } catch (ClassNotFoundException e) {
             e.printStackTrace();

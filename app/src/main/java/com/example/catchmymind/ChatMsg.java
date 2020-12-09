@@ -1,17 +1,23 @@
 package com.example.catchmymind;
 
+import java.util.ArrayList;
+
 // ChatMsg.java 채팅 메시지 ObjectStream 용.
 public class ChatMsg {
+
     private String code;
     private String userName;
     private String data;
     private byte[] imgbytes;
 
+    private String presenter; // 출제자
     private String roomName; // 방이름
+    private String maxNumofPeo; // 최대 인원수
     private String roomNumofPeo; // 인원수
 
     private String roomId; // 방아이디
-
+    private ArrayList<Room> roomList; // 방 리스트
+    
     private String quiz; // 문제
 
     private String itemName; // Item이름
@@ -50,6 +56,14 @@ public class ChatMsg {
         this.data = data;
     }
 
+    public String getPresenter() {
+        return presenter;
+    }
+
+    public void setPresenter(String presenter) {
+        this.presenter = presenter;
+    }
+
     public String getRoomName() {
         return roomName;
     }
@@ -58,13 +72,13 @@ public class ChatMsg {
         this.roomName = roomName;
     }
 
-    public String getRoomNumofPeo() {
-        return roomNumofPeo;
-    }
+    public String getMaxNumofPeo() { return maxNumofPeo; }
 
-    public void setRoomNumofPeo(String roomNumofPeo) {
-        this.roomNumofPeo = roomNumofPeo;
-    }
+    public void setMaxNumofPeo(String maxNumofPeo) { this.maxNumofPeo = maxNumofPeo; }
+
+    public String getRoomNumofPeo() { return roomNumofPeo; }
+
+    public void setRoomNumofPeo(String roomNumofPeo) { this.roomNumofPeo = roomNumofPeo; }
 
     public String getRoomId() {
         return roomId;
@@ -73,6 +87,10 @@ public class ChatMsg {
     public void setRoomId(String roomId) {
         this.roomId = roomId;
     }
+
+    public ArrayList<Room> getRoomList() { return roomList; }
+
+    public void setRoomList(ArrayList<Room> roomList) { this.roomList = roomList; }
 
     public String getQuiz() {
         return quiz;
@@ -105,4 +123,5 @@ public class ChatMsg {
     public void setPenSize(String penSize) {
         this.penSize = penSize;
     }
+
 }
