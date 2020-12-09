@@ -209,8 +209,8 @@ public class GameFragment extends Fragment implements SocketInterface{
                 // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
                 try {
                     if(cm.getCode().equals("302")) { // 퇴장
-                        Log.d("game:", cm.getCode());
-                        Log.d("game:", cm.getRoomId());
+                        Log.d("send exit game:", cm.getCode());
+                        Log.d("send exit game:", cm.getRoomId());
                         oos.writeObject(cm.getCode());
                         oos.writeObject(cm.getRoomId());
                     }
@@ -231,10 +231,8 @@ public class GameFragment extends Fragment implements SocketInterface{
         ChatMsg cm = new ChatMsg("", "", "");
         try {
             cm.setCode((String) ois.readObject());
-
+            Log.d("read exit game:", cm.getCode());
             if(cm.getCode().equals("302")) { // 방 퇴장 성공
-                Log.d("game:", cm.getCode());
-
                 Bundle args = new Bundle();
                 MySocket mySocket = new MySocket(userName, this.ois, this.oos);
                 args.putSerializable("obj", mySocket);

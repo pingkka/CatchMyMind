@@ -123,7 +123,7 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
     public synchronized ChatMsg ReadChatMsg() {
         ChatMsg cm = new ChatMsg();
         try {
-            cm.setCode(Integer.toString(Integer.parseInt((String)ois.readObject())));
+            cm.setCode((String)ois.readObject());
 
             if(cm.getCode().equals("303")) { // 방 입장 성공
                 // if enter 성공시 실행
@@ -132,7 +132,6 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
                 MySocket mySocket = new MySocket(userName, this.ois, this.oos);
                 args.putSerializable("obj", mySocket);
                 args.putString("roomId", (String) ois.readObject());
-
                 ((Activity)context).runOnUiThread(() -> Navigation.findNavController(view).navigate(R.id.action_gameRoomFragment_to_gameFragment, args));
             }
         } catch (ClassNotFoundException e) {
