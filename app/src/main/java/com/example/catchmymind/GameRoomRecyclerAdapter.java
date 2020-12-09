@@ -132,6 +132,7 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
                 MySocket mySocket = new MySocket(userName, this.ois, this.oos);
                 args.putSerializable("obj", mySocket);
                 args.putString("roomId", (String) ois.readObject());
+                args.putString("presenter", (String) ois.readObject());
                 ((Activity)context).runOnUiThread(() -> Navigation.findNavController(view).navigate(R.id.action_gameRoomFragment_to_gameFragment, args));
             }
         } catch (ClassNotFoundException e) {
