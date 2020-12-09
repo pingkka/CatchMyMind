@@ -35,7 +35,6 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
         this.ois = ois;
         this.oos = oos;
         this.userName = userName;
-
     }
 
     public void setRooms(ArrayList<Room> rooms) {
@@ -61,7 +60,6 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
         context = parent.getContext();
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-
         view = inflater.inflate(R.layout.room_info_item, parent, false);
         GameRoomRecyclerAdapter.ViewHolder viewHolder = new GameRoomRecyclerAdapter.ViewHolder(view);
 
@@ -72,6 +70,7 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.roomName.setText(rooms.get(position).getRoomName());
         holder.maxNumofPeo.setText(rooms.get(position).getMaxNumofPeo());
+        Log.d("room : ", rooms.get(position).getRoomId());
         holder.btnEnterRoom.setOnClickListener(v -> {
             EnterRoom(rooms.get(position).getRoomId());
         });
@@ -124,7 +123,7 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
     public synchronized ChatMsg ReadChatMsg() {
         ChatMsg cm = new ChatMsg();
         try {
-            cm.setCode((String) ois.readObject());
+            cm.setCode(Integer.toString(Integer.parseInt((String)ois.readObject())));
 
             if(cm.getCode().equals("303")) { // 방 입장 성공
                 // if enter 성공시 실행

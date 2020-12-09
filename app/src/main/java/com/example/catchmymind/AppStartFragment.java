@@ -74,8 +74,8 @@ public class AppStartFragment extends Fragment {
         binding.btnStart.setOnClickListener(view1 -> {
             LoginDialogFragment loginDialog = LoginDialogFragment.getInstance(ois, oos);
             loginDialog.show(getParentFragmentManager(), "login");
-            loginDialog.setDialogResult((String name, String code) -> {
-                if(code.equals("100")) {
+            loginDialog.setDialogResult((String name, String data) -> {
+                if(data.equals("login success")) {
                     Bundle args = new Bundle();
                     MySocket mySocket = new MySocket(name, this.ois, this.oos);
                     args.putSerializable("obj", mySocket);
