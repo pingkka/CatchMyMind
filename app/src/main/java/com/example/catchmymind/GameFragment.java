@@ -123,10 +123,11 @@ public class GameFragment extends Fragment implements SocketInterface{
         });
 
         drawBinding.btnAllClear.setOnClickListener(v -> {
+            myView.clearCanvas();
             Toast.makeText(requireContext(), "전체 지우기", Toast.LENGTH_SHORT).show();
         });
 
-        drawBinding.btnItem.setOnClickListener(v -> {
+        drawBinding.btnEditwordItem.setOnClickListener(v -> {
             Toast.makeText(requireContext(), "아이템 사용", Toast.LENGTH_SHORT).show();
         });
 

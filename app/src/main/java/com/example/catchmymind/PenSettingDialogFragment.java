@@ -73,6 +73,10 @@ public class PenSettingDialogFragment extends DialogFragment {
             penColor = "#8041D9";
         });
 
+        binding.btnBlack.setOnClickListener(v -> {
+            penColor = "#000000";
+        });
+
         binding.btn5px.setOnClickListener(v -> {
             penSize = "3";
         });
@@ -97,7 +101,9 @@ public class PenSettingDialogFragment extends DialogFragment {
         return view;
     }
 
-    public void setDialogResult(PenSettingResult dialogResult) { result = dialogResult; }
+    public void setDialogResult(PenSettingResult dialogResult) {
+        result = dialogResult;
+    }
 
     public interface PenSettingResult {
         void finish(String roomId, String penColor, String penSize);
@@ -140,7 +146,7 @@ public class PenSettingDialogFragment extends DialogFragment {
     }
 
     // SendChatMsg() : 방이름, 인원수를 서버에게 전달
-    public synchronized void SendChatMsg(ChatMsg cm)  {
+    public synchronized void SendChatMsg(ChatMsg cm) {
         new Thread() {
             public void run() {
                 // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
@@ -157,7 +163,7 @@ public class PenSettingDialogFragment extends DialogFragment {
     }
 
     // ChatMsg 를 읽어서 Return, Java 호환성 문제로 field별로 수신해서 ChatMsg 로 만들어 Return
-    public synchronized ChatMsg ReadChatMsg()  {
+    public synchronized ChatMsg ReadChatMsg() {
         ChatMsg cm = new ChatMsg();
         try {
             cm.setCode((String) ois.readObject());

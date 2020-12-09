@@ -6,7 +6,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.Xfermode;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -172,36 +175,36 @@ public class MyView extends View {
     }
 
     private Rect touchMove(MotionEvent event) {
-        Rect rect=processMove(event);
+        Rect rect = processMove(event);
         return rect;
     }
 
     private Rect processMove(MotionEvent event) {
-        final float x=event.getX();
-        final float y=event.getY();
+        final float x = event.getX();
+        final float y = event.getY();
 
-        final float dx=Math.abs(x-lastX);
-        final float dy=Math.abs(y-lastY);
+        final float dx = Math.abs(x - lastX);
+        final float dy = Math.abs(y - lastY);
 
-        Rect mInvalidateRect=new Rect();
+        Rect mInvalidateRect = new Rect();
 
-        if(dx>=TOUCH_TOLERANCE || dy>=TOUCH_TOLERANCE){
-            final int border=mInvalidateExtraBorder;
+        if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
+            final int border = mInvalidateExtraBorder;
 
-            mInvalidateRect.set((int)mCurveEndX-border,(int)mCurveEndY-border,(int)mCurveEndX+border,(int)mCurveEndY+border);
+            mInvalidateRect.set((int) mCurveEndX - border, (int) mCurveEndY - border, (int) mCurveEndX + border, (int) mCurveEndY + border);
 
-            float cx=mCurveEndX=(x+lastX)/2;
-            float cy=mCurveEndY=(y+lastY)/2;
+            float cx = mCurveEndX = (x + lastX) / 2;
+            float cy = mCurveEndY = (y + lastY) / 2;
 
-            mPath.quadTo(lastX,lastY,cx,cy);
+            mPath.quadTo(lastX, lastY, cx, cy);
 
-            mInvalidateRect.union((int)lastX-border,(int)lastY-border,(int)lastX+border,(int)lastY+border);
-            mInvalidateRect.union((int)cx-border,(int)cy-border,(int)cx,(int)cy+border);
+            mInvalidateRect.union((int) lastX - border, (int) lastY - border, (int) lastX + border, (int) lastY + border);
+            mInvalidateRect.union((int) cx - border, (int) cy - border, (int) cx, (int) cy + border);
 
-            lastX=x;
-            lastY=y;
+            lastX = x;
+            lastY = y;
 
-            mCanvas.drawPath(mPath,mPaint);
+            mCanvas.drawPath(mPath, mPaint);
 
         }
 
@@ -209,34 +212,45 @@ public class MyView extends View {
     }
 
     private Rect touchDown(MotionEvent event) {
-        float x=event.getX();
-        float y=event.getY();
+        float x = event.getX();
+        float y = event.getY();
 
-        lastX=x;
-        lastY=y;
+        lastX = x;
+        lastY = y;
 
-        Rect mInvalidateRect=new Rect();
-        mPath.moveTo(x,y);
+        Rect mInvalidateRect = new Rect();
+        mPath.moveTo(x, y);
 
-        final int border=mInvalidateExtraBorder;
-        mInvalidateRect.set((int)x-border,(int)y-border,(int)x+border,(int)y+border);
-        mCurveEndX=x;
-        mCurveEndY=y;
+        final int border = mInvalidateExtraBorder;
+        mInvalidateRect.set((int) x - border, (int) y - border, (int) x + border, (int) y + border);
+        mCurveEndX = x;
+        mCurveEndY = y;
 
-        mCanvas.drawPath(mPath,mPaint);
+        mCanvas.drawPath(mPath, mPaint);
         return mInvalidateRect;
     }
-    public void setStrokeWidth(int width){
+
+    public void setStrokeWidth(int width) {
         mPaint.setStrokeWidth(width);
     }
 
     private Rect touchUp(MotionEvent event, boolean b) {
-        Rect rect=processMove(event);
+        Rect rect = processMove(event);
         return rect;
     }
 
-    public void setColor(String color){
+    public void setColor(String color) {
         mPaint.setColor(Color.parseColor(color));
 
+    }
+
+    public void clearCanvas(){
+        Paint clearPaint  = new Paint();
+        Xfermode xmode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR);
+        clearPaint.setXfermode(xmode);
+
+        int iCnt = mCanvas.save();
+        mCanvas.drawBitmap(mBitmap, 0,0, clearPaint);
+        mCanvas.restoreToCount(iCnt);
     }
 }
