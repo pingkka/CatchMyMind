@@ -105,7 +105,8 @@ public class GameFragment extends Fragment implements SocketInterface{
                 Log.d("PenSetting : ", roomId);
                 Log.d("PenSetting : ", penColor);
                 Log.d("PenSetting : ", penSize);
-                myView.setPaintInfo(Integer.parseInt(penColor),Float.parseFloat(penSize)); // 호출이 안되는데..?
+                myView.setColor(penColor);
+                myView.setStrokeWidth(Integer.parseInt(penSize));
             });
         });
 
@@ -116,6 +117,8 @@ public class GameFragment extends Fragment implements SocketInterface{
                 Log.d("EraserSetting : ", roomId);
                 Log.d("EraserSetting : ", penColor);
                 Log.d("EraserSetting : ", penSize);
+                myView.setStrokeWidth(Integer.parseInt(penSize));
+                myView.setColor(penColor);
             });
         });
 

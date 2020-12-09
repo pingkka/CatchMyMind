@@ -46,20 +46,21 @@ public class EraserSettingDialogFragment extends DialogFragment {
         View view = binding.getRoot();
 
         binding.btn5px.setOnClickListener(v -> {
-            penSize = "5px";
+            penSize = "3";
         });
 
         binding.btn10px.setOnClickListener(v -> {
-            penSize = "10px";
+            penSize = "10";
         });
 
         binding.btn15px.setOnClickListener(v -> {
-            penSize = "15px";
+            penSize = "17";
         });
 
         binding.btnSetting.setOnClickListener(view12 -> {
             settingEraser();
             //Toast.makeText(requireContext(), "색 : " + penColor + ", 두께 : " + penSize + " 지우개 설정 완료", Toast.LENGTH_SHORT).show();
+            result.finish(roomId, penColor, penSize);
             dismiss();
         });
 
@@ -137,7 +138,7 @@ public class EraserSettingDialogFragment extends DialogFragment {
             cm.setCode((String) ois.readObject());
             Log.d("ReadChatMsg : ", cm.getCode());
             // cm.roomId 수신
-            result.finish(cm.getRoomId(), cm.getPenColor(), cm.getPenSize());
+            //result.finish(cm.getRoomId(), cm.getPenColor(), cm.getPenSize());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
