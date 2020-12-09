@@ -42,6 +42,8 @@ public class GameFragment extends Fragment implements SocketInterface{
 
     int gameStatus = 0; // 0 : 게임 시작 전, 1 : 게임 시작 후
 
+    MyView myView;
+
     public GameFragment() {
     }
 
@@ -65,7 +67,7 @@ public class GameFragment extends Fragment implements SocketInterface{
         drawBinding = LayoutDrawBinding.bind(binding.getRoot());
         chatBinding = LayoutChatBinding.bind(binding.getRoot());
 
-        MyView myView = new MyView(getContext());
+        myView = new MyView(getContext());
         LinearLayout stage = binding.layoutPaintmap;
         stage.addView(myView);
 
@@ -97,17 +99,18 @@ public class GameFragment extends Fragment implements SocketInterface{
 
     public void buttonClickSetting() {
         drawBinding.btnPen.setOnClickListener(v -> {
-            PenSettingDialogFragment penSettingDialog = PenSettingDialogFragment.getInstance();
+            PenSettingDialogFragment penSettingDialog = PenSettingDialogFragment.getInstance(ois, oos, roomId);
             penSettingDialog.show(getParentFragmentManager(), "penSetting");
             penSettingDialog.setDialogResult((roomId, penColor, penSize) -> {
                 Log.d("PenSetting : ", roomId);
                 Log.d("PenSetting : ", penColor);
                 Log.d("PenSetting : ", penSize);
+                myView.setPaintInfo(Integer.parseInt(penColor),Float.parseFloat(penSize)); // 호출이 안되는데..?
             });
         });
 
         drawBinding.btnRemove.setOnClickListener(v -> {
-            EraserSettingDialogFragment eraserSettingDialog = EraserSettingDialogFragment.getInstance();
+            EraserSettingDialogFragment eraserSettingDialog = EraserSettingDialogFragment.getInstance(ois, oos, roomId);
             eraserSettingDialog.show(getParentFragmentManager(), "eraserSetting");
             eraserSettingDialog.setDialogResult((roomId, penColor, penSize) -> {
                 Log.d("EraserSetting : ", roomId);

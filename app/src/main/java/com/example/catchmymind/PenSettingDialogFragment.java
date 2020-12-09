@@ -24,15 +24,18 @@ public class PenSettingDialogFragment extends DialogFragment {
     private String penColor = "#FF000000";
     private String penSize = "10";
 
-    private MySocket socket;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
+    private String roomId;
 
-    public PenSettingDialogFragment() {
+    public PenSettingDialogFragment(ObjectInputStream ois, ObjectOutputStream oos, String roomId) {
+        this.ois = ois;
+        this.oos = oos;
+        this.roomId = roomId;
     }
 
-    public static PenSettingDialogFragment getInstance() {
-        PenSettingDialogFragment penSettingDialogFragment = new PenSettingDialogFragment();
+    public static PenSettingDialogFragment getInstance(ObjectInputStream ois, ObjectOutputStream oos, String roomId) {
+        PenSettingDialogFragment penSettingDialogFragment = new PenSettingDialogFragment(ois, oos, roomId);
         return penSettingDialogFragment;
     }
 
@@ -83,8 +86,8 @@ public class PenSettingDialogFragment extends DialogFragment {
         });
 
         binding.btnSetting.setOnClickListener(view12 -> {
-//            settingPen();
-            Toast.makeText(requireContext(), "색 : " + penColor + ", 두께 : " + penSize + " 펜 설정 완료", Toast.LENGTH_SHORT).show();
+            settingPen();
+            //Toast.makeText(requireContext(), "색 : " + penColor + ", 두께 : " + penSize + " 펜 설정 완료", Toast.LENGTH_SHORT).show();
             dismiss();
         });
 
@@ -111,15 +114,12 @@ public class PenSettingDialogFragment extends DialogFragment {
         new Thread() {
             public void run() {
                 try {
-//                    socket = MySocket.getInstance();
-//                    oos = socket.getMyOos();
                     oos.flush();
-//                    ois = socket.getMyOis();
                     ChatMsg obj = new ChatMsg();
                     obj.setCode("602");
-//                    obj.setRoomId(socket.getRoomID());
                     obj.setPenColor(penColor);
                     obj.setPenSize(penSize);
+                    obj.setRoomId(roomId);
                     SendChatMsg(obj);
                     DoReceive(); // Server에서 읽는 Thread 실행
                 } catch (IOException e) {
@@ -159,10 +159,8 @@ public class PenSettingDialogFragment extends DialogFragment {
     public synchronized ChatMsg ReadChatMsg()  {
         ChatMsg cm = new ChatMsg();
         try {
-            // 여기가 문제
             cm.setCode((String) ois.readObject());
             Log.d("ReadChatMsg : ", cm.getCode());
-            // cm.roomId 수신
             result.finish(cm.getRoomId(), cm.getPenColor(), cm.getPenSize());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();

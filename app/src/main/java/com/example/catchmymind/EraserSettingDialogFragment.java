@@ -24,15 +24,18 @@ public class EraserSettingDialogFragment extends DialogFragment {
     private final String penColor = "#FFFFFFFF";
     private String penSize = "10";
 
-    private MySocket socket;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
+    private String roomId;
 
-    public EraserSettingDialogFragment() {
+    public EraserSettingDialogFragment(ObjectInputStream ois, ObjectOutputStream oos, String roomId) {
+        this.ois = ois;
+        this.oos = oos;
+        this.roomId = roomId;
     }
 
-    public static EraserSettingDialogFragment getInstance() {
-        EraserSettingDialogFragment eraserSettingDialogFragment = new EraserSettingDialogFragment();
+    public static EraserSettingDialogFragment getInstance(ObjectInputStream ois, ObjectOutputStream oos, String roomId) {
+        EraserSettingDialogFragment eraserSettingDialogFragment = new EraserSettingDialogFragment(ois, oos, roomId);
         return eraserSettingDialogFragment;
     }
 
@@ -55,8 +58,8 @@ public class EraserSettingDialogFragment extends DialogFragment {
         });
 
         binding.btnSetting.setOnClickListener(view12 -> {
-//            settingPen();
-            Toast.makeText(requireContext(), "색 : " + penColor + ", 두께 : " + penSize + " 지우개 설정 완료", Toast.LENGTH_SHORT).show();
+            settingEraser();
+            //Toast.makeText(requireContext(), "색 : " + penColor + ", 두께 : " + penSize + " 지우개 설정 완료", Toast.LENGTH_SHORT).show();
             dismiss();
         });
 
@@ -65,7 +68,9 @@ public class EraserSettingDialogFragment extends DialogFragment {
         return view;
     }
 
-    public void setDialogResult(EraserSettingResult dialogResult) { result = dialogResult; }
+    public void setDialogResult(EraserSettingResult dialogResult) {
+        result = dialogResult;
+    }
 
     public interface EraserSettingResult {
         void finish(String roomId, String penColor, String penSize);
@@ -79,20 +84,21 @@ public class EraserSettingDialogFragment extends DialogFragment {
         getDialog().getWindow().setLayout(width, height);
     }
 
-    public void settingPen() {
+    public void settingEraser() {
         new Thread() {
             public void run() {
-                //                    socket = MySocket.getInstance();
-//                    oos = socket.getMyOos();
-//                    oos.flush();
-//                    ois = socket.getMyOis();
-                ChatMsg obj = new ChatMsg();
-                obj.setCode("602");
-//                    obj.setRoomId(socket.getRoomID());
-                obj.setPenColor(penColor);
-                obj.setPenSize(penSize);
-                SendChatMsg(obj);
-                DoReceive(); // Server에서 읽는 Thread 실행
+                try {
+                    oos.flush();
+                    ChatMsg obj = new ChatMsg();
+                    obj.setCode("602");
+                    obj.setPenColor(penColor);
+                    obj.setPenSize(penSize);
+                    obj.setRoomId(roomId);
+                    SendChatMsg(obj);
+                    DoReceive(); // Server에서 읽는 Thread 실행
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }.start();
     }
@@ -107,7 +113,7 @@ public class EraserSettingDialogFragment extends DialogFragment {
     }
 
     // SendChatMsg() : 방이름, 인원수를 서버에게 전달
-    public synchronized void SendChatMsg(ChatMsg cm)  {
+    public synchronized void SendChatMsg(ChatMsg cm) {
         new Thread() {
             public void run() {
                 // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
@@ -124,7 +130,7 @@ public class EraserSettingDialogFragment extends DialogFragment {
     }
 
     // ChatMsg 를 읽어서 Return, Java 호환성 문제로 field별로 수신해서 ChatMsg 로 만들어 Return
-    public synchronized ChatMsg ReadChatMsg()  {
+    public synchronized ChatMsg ReadChatMsg() {
         ChatMsg cm = new ChatMsg();
         try {
             // 여기가 문제
