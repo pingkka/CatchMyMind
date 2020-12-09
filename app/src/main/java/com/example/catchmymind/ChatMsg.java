@@ -1,5 +1,7 @@
 package com.example.catchmymind;
 
+import java.util.ArrayList;
+
 // ChatMsg.java 채팅 메시지 ObjectStream 용.
 public class ChatMsg {
 
@@ -14,7 +16,8 @@ public class ChatMsg {
     private String roomNumofPeo; // 인원수
 
     private String roomId; // 방아이디
-
+    private ArrayList<Room> roomList; // 방 리스트
+    
     private String quiz; // 문제
 
     private String itemName; // Item이름
@@ -84,6 +87,10 @@ public class ChatMsg {
     public void setRoomId(String roomId) {
         this.roomId = roomId;
     }
+
+    public ArrayList<Room> getRoomList() { return roomList; }
+
+    public void setRoomList(ArrayList<Room> roomList) { this.roomList = roomList; }
 
     public String getQuiz() {
         return quiz;

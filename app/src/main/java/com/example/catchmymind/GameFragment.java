@@ -1,5 +1,6 @@
 package com.example.catchmymind;
 
+import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -34,6 +35,7 @@ public class GameFragment extends Fragment implements SocketInterface{
     private String userName;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
+    private String roomId;
 
     // int countdown = 90; // 카운트다운 시간 선언
     int countdown = 40; // 테스트 용 카운트다운 시간 선언
@@ -54,6 +56,8 @@ public class GameFragment extends Fragment implements SocketInterface{
             ois = mySocket.getOis();
             oos = mySocket.getOos();
             userName = mySocket.getUserName();
+
+            roomId = getArguments().getString("roomId");
         }
     }
 
@@ -77,7 +81,7 @@ public class GameFragment extends Fragment implements SocketInterface{
         super.onViewCreated(view, savedInstanceState);
 
         binding.btnLeave.setOnClickListener(v -> {
-            Navigation.findNavController(requireView()).navigate(R.id.action_gameFragment_to_gameRoomFragment);
+            GameExit();
         });
 
         binding.btnGameStart.setOnClickListener(v -> {
@@ -167,6 +171,18 @@ public class GameFragment extends Fragment implements SocketInterface{
         );
     }
 
+    public void GameExit() {
+        ChatMsg cm = new ChatMsg();
+        new Thread() {
+            public void run() {
+                cm.setCode("302");
+                cm.setRoomId(roomId);
+                SendChatMsg(cm);
+                DoReceive(); // Server에서 읽는 Thread 실행
+            }
+        }.start();
+    }
+
     public void GameStart() {
         new Thread() {
             public void run() {
@@ -194,9 +210,17 @@ public class GameFragment extends Fragment implements SocketInterface{
             public void run() {
                 // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
                 try {
-                    oos.writeObject(cm.getCode());
-                    oos.writeObject(cm.getUserName());
-                    oos.writeObject(cm.getData());
+                    if(cm.getCode().equals("302")) { // 퇴장
+                        Log.d("game:", cm.getCode());
+                        Log.d("game:", cm.getRoomId());
+                        oos.writeObject(cm.getCode());
+                        oos.writeObject(cm.getRoomId());
+                    }
+                    else {
+                        oos.writeObject(cm.getCode());
+                        oos.writeObject(cm.getUserName());
+                        oos.writeObject(cm.getData());
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -209,8 +233,20 @@ public class GameFragment extends Fragment implements SocketInterface{
         ChatMsg cm = new ChatMsg("", "", "");
         try {
             cm.setCode((String) ois.readObject());
-            cm.setUserName((String) ois.readObject());
-            cm.setData((String) ois.readObject());
+
+            if(cm.getCode().equals("302")) { // 방 퇴장 성공
+                Log.d("game:", cm.getCode());
+
+                Bundle args = new Bundle();
+                MySocket mySocket = new MySocket(userName, this.ois, this.oos);
+                args.putSerializable("obj", mySocket);
+
+                getActivity().runOnUiThread(() ->Navigation.findNavController(requireView()).navigate(R.id.action_gameFragment_to_gameRoomFragment, args));
+            }
+            else {
+                cm.setUserName((String) ois.readObject());
+                cm.setData((String) ois.readObject());
+            }
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
