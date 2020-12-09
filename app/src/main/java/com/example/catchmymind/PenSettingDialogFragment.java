@@ -21,7 +21,7 @@ public class PenSettingDialogFragment extends DialogFragment {
     private PenSettingDialogBinding binding;
     PenSettingResult result;
 
-    private String penColor = "#FF000000";
+    private String penColor = "#000000";
     private String penSize = "10";
 
     private ObjectInputStream ois;
@@ -152,6 +152,7 @@ public class PenSettingDialogFragment extends DialogFragment {
                     oos.writeObject(cm.getRoomId());
                     oos.writeObject(cm.getPenColor());
                     oos.writeObject(cm.getPenSize());
+                    oos.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -168,6 +169,8 @@ public class PenSettingDialogFragment extends DialogFragment {
             cm.setPenColor((String) ois.readObject());
             cm.setPenSize((String) ois.readObject());
             Log.d("ReadChatMsg : ", cm.getCode());
+            Log.d("PenColor : ", cm.getPenColor());
+            Log.d("PenSize : ", cm.getPenSize());
             result.finish(cm.getRoomId(), cm.getPenColor(), cm.getPenSize());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();

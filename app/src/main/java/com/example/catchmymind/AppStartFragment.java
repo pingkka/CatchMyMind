@@ -54,7 +54,7 @@ public class AppStartFragment extends Fragment {
         return view;
     }
 
-    public void Connect() {
+    public synchronized void Connect() {
         new Thread() {
             public void run() {
                 try {

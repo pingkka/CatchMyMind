@@ -10,78 +10,22 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Xfermode;
+import android.os.Bundle;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.navigation.Navigation;
 
-//import android.content.Context;
-//import android.graphics.Canvas;
-//import android.graphics.Color;
-//import android.graphics.Paint;
-//import android.graphics.Path;
-//import android.util.Log;
-//import android.view.MotionEvent;
-//import android.view.View;
-//
-//public class MyView extends View {
-//    //private Paint paint = new Paint();
-//    //private Canvas canvas;
-//
-//    private Path path = new Path();
-//
-//    private int x, y;
-//
-//    private String penColor = "#000000";
-//    private float size = 10;
-//
-//    public MyView(Context context) {
-//        super(context);
-//    }
-//
-//    @Override
-//    protected void onDraw(Canvas canvas) {
-//        Paint paint = new Paint();
-//        Log.d("penSetting : ", penColor + "+" + size);
-//        paint.setColor(Color.parseColor(penColor));
-//        paint.setStyle(Paint.Style.STROKE);
-//        paint.setStrokeWidth(size);
-//
-//        canvas.drawPath(path, paint);
-//    }
-//
-//    public void setPaintInfo(String color, float size) {
-//        Log.d("penSetting : ", color + "+" + size);
-//        this.penColor = color;
-//        this.size = size;
-//
-//        invalidate();
-//    }
-//
-//    @Override
-//    public boolean onTouchEvent(MotionEvent event) {
-//        x = (int) event.getX();
-//        y = (int) event.getY();
-//
-//        switch (event.getAction()) {
-//            case MotionEvent.ACTION_DOWN:
-//                path.moveTo(x, y);
-//                break;
-//            case MotionEvent.ACTION_MOVE:
-//                x = (int) event.getX();
-//                y = (int) event.getY();
-//
-//                path.lineTo(x, y);
-//                break;
-//        }
-//
-//        invalidate();
-//
-//        return true;
-//    }
-//}
-public class MyView extends View {
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+
+public class MyView extends View implements SocketInterface {
 
     public boolean changed = false;
 
@@ -101,17 +45,22 @@ public class MyView extends View {
 
     static final float TOUCH_TOLERANCE = 8;
 
-    public MyView(Context context) {
+    private String userName;
+    private ObjectInputStream ois;
+    private ObjectOutputStream oos;
+    private String roomId;
+
+    public MyView(Context context, String userName, ObjectOutputStream oos, ObjectInputStream ois) {
         super(context);
-        init(context);
+        init(context, userName, oos, ois);
     }
 
     public MyView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        init(context);
+        init(context, userName, oos, ois);
     }
 
-    private void init(Context context) {
+    private void init(Context context, String userName, ObjectOutputStream oos, ObjectInputStream ois) {
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setColor(Color.BLACK);
@@ -123,6 +72,10 @@ public class MyView extends View {
 
         this.lastX = -1;
         this.lastY = -1;
+
+        this.userName = userName;
+        this.oos = oos;
+        this.ois = ois;
     }
 
     @Override
@@ -146,32 +99,48 @@ public class MyView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getAction();
+        ChatMsg cm = new ChatMsg();
         switch (action) {
-            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_UP: // 뗐을 때
                 changed = true;
                 Rect rect = touchUp(event, false);
                 if (rect != null) {
                     invalidate(rect);
+                    cm.setCode("600");
+                    cm.setUserName(userName);
+                    cm.setRect(rect);
+                    SendChatMsg(cm);
                 }
                 mPath.rewind();
-
                 return true;
-            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_DOWN: // 눌렸을 때
                 rect = touchDown(event);
                 if (rect != null) {
                     invalidate(rect);
+                    cm.setCode("600");
+                    cm.setUserName(userName);
+                    cm.setRect(rect);
+                    SendChatMsg(cm);
                 }
-
                 return true;
-            case MotionEvent.ACTION_MOVE:
+            case MotionEvent.ACTION_MOVE: // 그리는 중
                 rect = touchMove(event);
                 if (rect != null) {
                     invalidate(rect);
+                    cm.setCode("600");
+                    cm.setUserName(userName);
+                    cm.setRect(rect);
+                    SendChatMsg(cm);
                 }
                 return true;
 
         }
         return false;
+    }
+
+    private Rect touchUp(MotionEvent event, boolean b) {
+        Rect rect = processMove(event);
+        return rect;
     }
 
     private Rect touchMove(MotionEvent event) {
@@ -205,7 +174,6 @@ public class MyView extends View {
             lastY = y;
 
             mCanvas.drawPath(mPath, mPaint);
-
         }
 
         return mInvalidateRect;
@@ -234,23 +202,68 @@ public class MyView extends View {
         mPaint.setStrokeWidth(width);
     }
 
-    private Rect touchUp(MotionEvent event, boolean b) {
-        Rect rect = processMove(event);
-        return rect;
-    }
 
     public void setColor(String color) {
         mPaint.setColor(Color.parseColor(color));
 
     }
 
-    public void clearCanvas(){
-        Paint clearPaint  = new Paint();
+    public void clearCanvas() {
+        Paint clearPaint = new Paint();
         Xfermode xmode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR);
         clearPaint.setXfermode(xmode);
 
         int iCnt = mCanvas.save();
-        mCanvas.drawBitmap(mBitmap, 0,0, clearPaint);
+        mCanvas.drawBitmap(mBitmap, 0, 0, clearPaint);
         mCanvas.restoreToCount(iCnt);
+    }
+
+    // Server Message 수신
+
+    // SendChatMsg()
+    @Override
+    public synchronized void SendChatMsg(ChatMsg cm) {
+        new Thread() {
+            public void run() {
+                // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
+                try {
+                    oos.writeObject(cm.getCode());
+                    oos.writeObject(cm.getUserName());
+                    oos.writeObject(cm.getData());
+                    oos.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+    }
+
+    @Override
+    public synchronized void DoReceive() {
+        new Thread() {
+            public void run() {
+                ReadChatMsg();
+            }
+        }.start();
+    }
+
+    @Override
+    public synchronized ChatMsg ReadChatMsg() {
+        ChatMsg cm = new ChatMsg("", "", "");
+        try {
+            cm.setCode((String) ois.readObject());
+            Log.d("Edit : ", cm.getCode());
+
+           if (cm.getCode().equals("600")) {
+                cm.setUserName((String) ois.readObject());
+                cm.setRect((Rect) ois.readObject());
+                invalidate(cm.getRect());
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return cm;
     }
 }

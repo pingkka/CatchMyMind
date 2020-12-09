@@ -81,7 +81,7 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
         return rooms.size();
     }
 
-    public void EnterRoom(String roomId) {
+    public synchronized void EnterRoom(String roomId) {
         ChatMsg cm = new ChatMsg();
         new Thread() {
             public void run() {
@@ -112,6 +112,7 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
                 try {
                     oos.writeObject(cm.getCode());
                     oos.writeObject(cm.getRoomId());
+                    oos.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -124,7 +125,6 @@ public class GameRoomRecyclerAdapter extends RecyclerView.Adapter<GameRoomRecycl
         ChatMsg cm = new ChatMsg();
         try {
             cm.setCode((String)ois.readObject());
-
             if(cm.getCode().equals("303")) { // 방 입장 성공
                 // if enter 성공시 실행
                 Log.d("gameRoom: ", cm.getCode());

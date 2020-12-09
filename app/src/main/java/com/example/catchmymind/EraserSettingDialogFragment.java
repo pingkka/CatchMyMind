@@ -21,7 +21,7 @@ public class EraserSettingDialogFragment extends DialogFragment {
     private EraserSettingDialogBinding binding;
     EraserSettingResult result;
 
-    private final String penColor = "#FFFFFFFF";
+    private final String penColor = "#FFFFFF";
     private String penSize = "10";
 
     private ObjectInputStream ois;
@@ -83,7 +83,7 @@ public class EraserSettingDialogFragment extends DialogFragment {
         getDialog().getWindow().setLayout(width, height);
     }
 
-    public void settingEraser() {
+    public synchronized void settingEraser() {
         new Thread() {
             public void run() {
                 try {
@@ -121,6 +121,7 @@ public class EraserSettingDialogFragment extends DialogFragment {
                     oos.writeObject(cm.getRoomId());
                     oos.writeObject(cm.getPenColor());
                     oos.writeObject(cm.getPenSize());
+                    oos.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

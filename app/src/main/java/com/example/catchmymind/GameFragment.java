@@ -1,6 +1,7 @@
 package com.example.catchmymind;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -82,7 +83,7 @@ public class GameFragment extends Fragment implements SocketInterface {
         chatBinding = LayoutChatBinding.bind(binding.getRoot());
         chattingViewBinding = LayoutChattingViewBinding.bind(binding.getRoot());
 
-        myView = new MyView(getContext());
+        myView = new MyView(getContext(), userName, oos, ois);
         LinearLayout stage = binding.layoutPaintmap;
         stage.addView(myView);
 
@@ -98,6 +99,8 @@ public class GameFragment extends Fragment implements SocketInterface {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        GameSetting(presenter);
 
         binding.btnLeave.setOnClickListener(v -> {
             GameExit();
@@ -144,7 +147,7 @@ public class GameFragment extends Fragment implements SocketInterface {
             EditQuizDialogFragment editQuizDialogFragment = new EditQuizDialogFragment();
             editQuizDialogFragment.show(getParentFragmentManager(), "editQuiz");
             editQuizDialogFragment.setDialogResult((word) -> {
-                Log.d("EraserSetting : ", word);
+                Log.d("Edit Word : ", word);
                 EditItem(word);
             });
 
@@ -219,10 +222,12 @@ public class GameFragment extends Fragment implements SocketInterface {
                     } else if (countdown == 0) {
                         timer.cancel();
                         Thread.interrupted();  // Thread 강제 종료
-                        GameScoreDialogFragment gameScoreDialog = GameScoreDialogFragment.getInstance();
+                        GameScoreDialogFragment gameScoreDialog = GameScoreDialogFragment.getInstance(ois,oos,roomId);
                         gameScoreDialog.show(getParentFragmentManager(), "gameScore");
-                        gameScoreDialog.setDialogResult((roomId) -> {
-                            Log.d("gameScore : ", roomId);
+                        gameScoreDialog.setDialogResult((code) -> {
+                            Log.d("gameScore : ", code);
+                            if(code.equals("302"))
+                                Navigation.findNavController(getParentFragment().getView()).navigate(R.id.action_gameFragment_to_gameRoomFragment);
                         });
                     }
                     binding.progressBar.setProgress(countdown);
@@ -230,7 +235,7 @@ public class GameFragment extends Fragment implements SocketInterface {
         );
     }
 
-    public void GameExit() {
+    public synchronized void GameExit() {
         ChatMsg cm = new ChatMsg();
         new Thread() {
             public void run() {
@@ -258,7 +263,7 @@ public class GameFragment extends Fragment implements SocketInterface {
         }
     }
 
-    public void GameStart() {
+    public synchronized void GameStart() {
         ChatMsg cm = new ChatMsg();
         new Thread() {
             public void run() {
@@ -270,7 +275,7 @@ public class GameFragment extends Fragment implements SocketInterface {
         }.start();
     }
 
-    public void ClearCanvas() {
+    public synchronized void ClearCanvas() {
         ChatMsg cm = new ChatMsg();
         new Thread() {
             public void run() {
@@ -282,7 +287,7 @@ public class GameFragment extends Fragment implements SocketInterface {
         }.start();
     }
 
-    public void RandomItem() {
+    public synchronized void RandomItem() {
         ChatMsg cm = new ChatMsg();
         new Thread() {
             public void run() {
@@ -296,7 +301,7 @@ public class GameFragment extends Fragment implements SocketInterface {
         }.start();
     }
 
-    public void EditItem(String quiz) {
+    public synchronized void EditItem(String quiz) {
         ChatMsg cm = new ChatMsg();
         new Thread() {
             public void run() {
@@ -354,6 +359,7 @@ public class GameFragment extends Fragment implements SocketInterface {
                         oos.writeObject(cm.getUserName());
                         oos.writeObject(cm.getData());
                     }
+                    oos.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -366,6 +372,7 @@ public class GameFragment extends Fragment implements SocketInterface {
         ChatMsg cm = new ChatMsg("", "", "");
         try {
             cm.setCode((String) ois.readObject());
+            Log.d("Edit : ", cm.getCode());
             if (cm.getCode().equals("302")) { // 방 퇴장 성공
                 Bundle args = new Bundle();
                 MySocket mySocket = new MySocket(userName, this.ois, this.oos);
@@ -391,7 +398,11 @@ public class GameFragment extends Fragment implements SocketInterface {
                 binding.progressBar.setProgress(countdown); // 현재 프로그래스바 시간 설정
 
                 startTimerThread();
-            } else if (cm.getCode().equals("601")) {
+//            } else if (cm.getCode().equals("600")) {
+//                cm.setUserName((String) ois.readObject());
+//                cm.setRect((Rect) ois.readObject());
+//                myView.invalidate(cm.getRect());
+            }else if (cm.getCode().equals("601")) {
                 cm.setData((String) ois.readObject());
                 cm.setQuiz((String) ois.readObject());
                 Toast.makeText(requireContext(), cm.getQuiz(), Toast.LENGTH_SHORT).show();

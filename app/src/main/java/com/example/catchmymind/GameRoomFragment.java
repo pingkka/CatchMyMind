@@ -83,7 +83,7 @@ public class GameRoomFragment extends Fragment implements Serializable, SocketIn
         });
     }
 
-    public void Logout() {
+    public synchronized void Logout() {
         new Thread() {
             public void run() {
                 ChatMsg obj = new ChatMsg(userName, "400", "bye");
@@ -93,7 +93,7 @@ public class GameRoomFragment extends Fragment implements Serializable, SocketIn
         }.start();
     }
 
-    public void Refresh() {
+    public synchronized void Refresh() {
         new Thread() {
             public void run() {
                 ChatMsg obj = new ChatMsg(userName, "700", "Refresh");
@@ -123,6 +123,7 @@ public class GameRoomFragment extends Fragment implements Serializable, SocketIn
                     oos.writeObject(cm.getCode());
                     oos.writeObject(cm.getUserName());
                     oos.writeObject(cm.getData());
+                    oos.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

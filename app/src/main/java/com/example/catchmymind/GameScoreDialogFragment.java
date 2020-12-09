@@ -27,18 +27,22 @@ public class GameScoreDialogFragment extends DialogFragment implements Serializa
     private GameScoreDialogBinding binding;
     GameScoreResult result;
 
-    private MySocket socket;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
+    private String roomId;
 
-    public GameScoreDialogFragment(){}
-
-    public GameScoreDialogFragment(ArrayList<HashMap<String, String>> score) {
-        this.score = score;
+    public GameScoreDialogFragment() {
     }
 
-    public static GameScoreDialogFragment getInstance() {
-        GameScoreDialogFragment gameScoreDialogFragment = new GameScoreDialogFragment(score);
+    public GameScoreDialogFragment(ArrayList<HashMap<String, String>> score, ObjectInputStream ois, ObjectOutputStream oos, String roomId) {
+        this.score = score;
+        this.ois = ois;
+        this.oos = oos;
+        this.roomId = roomId;
+    }
+
+    public static GameScoreDialogFragment getInstance(ObjectInputStream ois, ObjectOutputStream oos, String roomId) {
+        GameScoreDialogFragment gameScoreDialogFragment = new GameScoreDialogFragment(score, ois, oos, roomId);
         return gameScoreDialogFragment;
     }
 
@@ -50,14 +54,16 @@ public class GameScoreDialogFragment extends DialogFragment implements Serializa
 
         binding.rvSocre.setLayoutManager(new LinearLayoutManager(requireContext()));
         HashMap<String, String> hashMap = new HashMap<>();
-        hashMap.put("user","이수연");
+        hashMap.put("user", "이수연");
         hashMap.put("score", "1");
+        hashMap.put("user1", "민경진");
+        hashMap.put("score1", "2");
         score.add(hashMap);
         GameScoreRecyclerAdapter gameScoreRecyclerAdapter = new GameScoreRecyclerAdapter(score);
         binding.rvSocre.setAdapter(gameScoreRecyclerAdapter);
 
         binding.btnExit.setOnClickListener(view12 -> {
-            Navigation.findNavController(getParentFragment().getView()).navigate(R.id.action_gameFragment_to_gameRoomFragment);
+            GameExit();
             dismiss();
         });
 
@@ -80,23 +86,14 @@ public class GameScoreDialogFragment extends DialogFragment implements Serializa
         getDialog().getWindow().setLayout(width, height);
     }
 
-    // 서버 통신, code, username, roomId
-    public void ExitRoom() {
+    public synchronized void GameExit() {
+        ChatMsg cm = new ChatMsg();
         new Thread() {
             public void run() {
-                try {
-//                    socket = MySocket.getInstance();
-//                    oos = socket.getMyOos();
-                    oos.flush();
-//                    ois = socket.getMyOis();
-                    ChatMsg obj = new ChatMsg();
-                    obj.setCode("300");
-//                    obj.setUserName(socket.getUserName());
-                    SendChatMsg(obj);
-                    DoReceive(); // Server에서 읽는 Thread 실행
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                cm.setCode("302");
+                cm.setRoomId(roomId);
+                SendChatMsg(cm);
+                DoReceive(); // Server에서 읽는 Thread 실행
             }
         }.start();
     }
@@ -111,7 +108,7 @@ public class GameScoreDialogFragment extends DialogFragment implements Serializa
     }
 
     // SendChatMsg() : 방이름, 인원수를 서버에게 전달
-    public synchronized void SendChatMsg(ChatMsg cm)  {
+    public synchronized void SendChatMsg(ChatMsg cm) {
         new Thread() {
             public void run() {
                 // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
@@ -126,16 +123,15 @@ public class GameScoreDialogFragment extends DialogFragment implements Serializa
     }
 
     // ChatMsg 를 읽어서 Return, Java 호환성 문제로 field별로 수신해서 ChatMsg 로 만들어 Return
-    public synchronized ChatMsg ReadChatMsg()  {
+    public synchronized ChatMsg ReadChatMsg() {
         ChatMsg cm = new ChatMsg();
         try {
-            // 여기가 문제
             cm.setCode((String) ois.readObject());
             cm.setRoomId((String) ois.readObject());
             Log.d("ReadChatMsg : ", cm.getCode());
             Log.d("ReadChatMsg : ", cm.getUserName());
-            // cm.roomId 수신
-            result.finish(cm.getRoomId());
+            if(cm.getCode().equals("302"))
+                result.finish(cm.getCode());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -143,5 +139,6 @@ public class GameScoreDialogFragment extends DialogFragment implements Serializa
         }
         return cm;
     }
+
 
 }

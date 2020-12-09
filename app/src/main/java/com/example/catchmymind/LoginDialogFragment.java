@@ -109,6 +109,7 @@ public class LoginDialogFragment extends DialogFragment implements Serializable,
                     oos.writeObject(cm.getCode());
                     oos.writeObject(cm.getUserName());
                     oos.writeObject(cm.getData());
+                    oos.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

@@ -119,6 +119,7 @@ public class RoomSettingDialogFragment extends DialogFragment implements Seriali
                     oos.writeObject(cm.getCode());
                     oos.writeObject(cm.getRoomName());
                     oos.writeObject(cm.getMaxNumofPeo());
+                    oos.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

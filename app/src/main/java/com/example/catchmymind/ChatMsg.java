@@ -1,5 +1,8 @@
 package com.example.catchmymind;
 
+import android.graphics.Bitmap;
+import android.graphics.Rect;
+
 import java.util.ArrayList;
 
 // ChatMsg.java 채팅 메시지 ObjectStream 용.
@@ -23,6 +26,9 @@ public class ChatMsg {
     private String itemName; // Item이름
     private String penColor; // 펜 색상
     private String penSize; // 펜, 지우개 두께
+
+    private Bitmap bitmap;
+    private Rect rect;
 
     public ChatMsg() {}
 
@@ -124,4 +130,19 @@ public class ChatMsg {
         this.penSize = penSize;
     }
 
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+
+    public void setBitmap(Bitmap bitmap) {
+        this.bitmap = bitmap;
+    }
+
+    public Rect getRect() {
+        return rect;
+    }
+
+    public void setRect(Rect rect) {
+        this.rect = rect;
+    }
 }
