@@ -84,32 +84,22 @@
 
     </LinearLayout>
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content">
 
         <!--펜 색, 두께 / 지우개 두께 / 아이템 / 전체 삭제 / 뒤로가기 / 앞으로가기 -->
         <include
             android:id="@+id/layout_draw"
             layout="@layout/layout_draw"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="visible"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:visibility="visible" />
 
         <include
             android:id="@+id/layout_chat"
             layout="@layout/layout_chat"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="invisible"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:visibility="invisible" />
 
-    </LinearLayout>
+    </FrameLayout>
 
 
 </LinearLayout>
