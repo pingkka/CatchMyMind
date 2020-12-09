@@ -91,8 +91,6 @@ public class PenSettingDialogFragment extends DialogFragment {
 
         binding.btnSetting.setOnClickListener(view12 -> {
             settingPen();
-            //Toast.makeText(requireContext(), "색 : " + penColor + ", 두께 : " + penSize + " 펜 설정 완료", Toast.LENGTH_SHORT).show();
-            result.finish(roomId, penColor, penSize);
             dismiss();
         });
 
@@ -145,7 +143,6 @@ public class PenSettingDialogFragment extends DialogFragment {
         }.start();
     }
 
-    // SendChatMsg() : 방이름, 인원수를 서버에게 전달
     public synchronized void SendChatMsg(ChatMsg cm) {
         new Thread() {
             public void run() {
@@ -167,8 +164,11 @@ public class PenSettingDialogFragment extends DialogFragment {
         ChatMsg cm = new ChatMsg();
         try {
             cm.setCode((String) ois.readObject());
+            cm.setRoomId((String) ois.readObject());
+            cm.setPenColor((String) ois.readObject());
+            cm.setPenSize((String) ois.readObject());
             Log.d("ReadChatMsg : ", cm.getCode());
-            //result.finish(cm.getRoomId(), cm.getPenColor(), cm.getPenSize());
+            result.finish(cm.getRoomId(), cm.getPenColor(), cm.getPenSize());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

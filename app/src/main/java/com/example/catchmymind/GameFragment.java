@@ -123,12 +123,15 @@ public class GameFragment extends Fragment implements SocketInterface{
         });
 
         drawBinding.btnAllClear.setOnClickListener(v -> {
-            myView.clearCanvas();
-            Toast.makeText(requireContext(), "전체 지우기", Toast.LENGTH_SHORT).show();
+            clearCanvas();
         });
 
         drawBinding.btnEditwordItem.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "아이템 사용", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "편집 아이템 사용", Toast.LENGTH_SHORT).show();
+        });
+
+        drawBinding.btnRanwordItem.setOnClickListener(v -> {
+            Toast.makeText(requireContext(), "랜덤 아이템 사용", Toast.LENGTH_SHORT).show();
         });
 
         drawBinding.btnDrawBack.setOnClickListener(v -> {
@@ -162,7 +165,7 @@ public class GameFragment extends Fragment implements SocketInterface{
                     countdown = binding.progressBar.getProgress();
                     if(countdown > 0){
                         countdown = countdown - 1;
-                    }else if(countdown == 0){
+                    } else if(countdown == 0){
                         timer.cancel();
                         Thread.interrupted();  // Thread 강제 종료
                         GameScoreDialogFragment gameScoreDialog = GameScoreDialogFragment.getInstance();
@@ -198,6 +201,18 @@ public class GameFragment extends Fragment implements SocketInterface{
         }.start();
     }
 
+    public void clearCanvas() {
+        ChatMsg cm = new ChatMsg();
+        new Thread() {
+            public void run() {
+                cm.setCode("603");
+                cm.setRoomId(roomId);
+                SendChatMsg(cm);
+                DoReceive(); // Server에서 읽는 Thread 실행
+            }
+        }.start();
+    }
+
     // Server Message 수신
     @Override
     public synchronized void DoReceive() {
@@ -218,6 +233,10 @@ public class GameFragment extends Fragment implements SocketInterface{
                     if(cm.getCode().equals("302")) { // 퇴장
                         Log.d("send exit game:", cm.getCode());
                         Log.d("send exit game:", cm.getRoomId());
+                        oos.writeObject(cm.getCode());
+                        oos.writeObject(cm.getRoomId());
+                    }
+                    else if(cm.getCode().equals("603")){
                         oos.writeObject(cm.getCode());
                         oos.writeObject(cm.getRoomId());
                     }
@@ -245,6 +264,9 @@ public class GameFragment extends Fragment implements SocketInterface{
                 args.putSerializable("obj", mySocket);
 
                 getActivity().runOnUiThread(() ->Navigation.findNavController(requireView()).navigate(R.id.action_gameFragment_to_gameRoomFragment, args));
+            }
+            else if(cm.getCode().equals("603")){
+                myView.clearCanvas();
             }
             else {
                 cm.setUserName((String) ois.readObject());
