@@ -21,10 +21,11 @@ import com.example.catchmymind.databinding.LayoutDrawBinding;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class GameFragment extends Fragment implements SocketInterface{
+public class GameFragment extends Fragment implements SocketInterface {
 
     private FragmentGameBinding binding;
     private LayoutDrawBinding drawBinding;
@@ -123,14 +124,22 @@ public class GameFragment extends Fragment implements SocketInterface{
         });
 
         drawBinding.btnAllClear.setOnClickListener(v -> {
-            clearCanvas();
+            ClearCanvas();
         });
 
         drawBinding.btnEditwordItem.setOnClickListener(v -> {
+            EditQuizDialogFragment editQuizDialogFragment = new EditQuizDialogFragment();
+            editQuizDialogFragment.show(getParentFragmentManager(), "editQuiz");
+            editQuizDialogFragment.setDialogResult((word) -> {
+                Log.d("EraserSetting : ", word);
+                EditItem(word);
+            });
+
             Toast.makeText(requireContext(), "편집 아이템 사용", Toast.LENGTH_SHORT).show();
         });
 
         drawBinding.btnRanwordItem.setOnClickListener(v -> {
+            RandomItem();
             Toast.makeText(requireContext(), "랜덤 아이템 사용", Toast.LENGTH_SHORT).show();
         });
 
@@ -163,9 +172,9 @@ public class GameFragment extends Fragment implements SocketInterface{
         getActivity().runOnUiThread( //progressBar는 ui에 해당하므로 runOnUiThread로 컨트롤해야한다
                 () -> { //run을 해준다. 그러나 일반 thread처럼 .start()를 해줄 필요는 없다
                     countdown = binding.progressBar.getProgress();
-                    if(countdown > 0){
+                    if (countdown > 0) {
                         countdown = countdown - 1;
-                    } else if(countdown == 0){
+                    } else if (countdown == 0) {
                         timer.cancel();
                         Thread.interrupted();  // Thread 강제 종료
                         GameScoreDialogFragment gameScoreDialog = GameScoreDialogFragment.getInstance();
@@ -194,19 +203,48 @@ public class GameFragment extends Fragment implements SocketInterface{
     public void GameStart() {
         new Thread() {
             public void run() {
-                ChatMsg obj = new ChatMsg(userName, "500", "RoomId + gamestart");
+                ChatMsg obj = new ChatMsg(userName, "500", roomId + "gamestart");
                 SendChatMsg(obj);
                 DoReceive(); // Server에서 읽는 Thread 실행
             }
         }.start();
     }
 
-    public void clearCanvas() {
+    public void ClearCanvas() {
         ChatMsg cm = new ChatMsg();
         new Thread() {
             public void run() {
                 cm.setCode("603");
                 cm.setRoomId(roomId);
+                SendChatMsg(cm);
+                DoReceive(); // Server에서 읽는 Thread 실행
+            }
+        }.start();
+    }
+
+    public void RandomItem() {
+        ChatMsg cm = new ChatMsg();
+        new Thread() {
+            public void run() {
+                cm.setCode("601");
+                cm.setUserName(userName);
+                cm.setRoomId(roomId);
+                cm.setData("ramdom");
+                SendChatMsg(cm);
+                DoReceive(); // Server에서 읽는 Thread 실행
+            }
+        }.start();
+    }
+
+    public void EditItem(String quiz) {
+        ChatMsg cm = new ChatMsg();
+        new Thread() {
+            public void run() {
+                cm.setCode("601");
+                cm.setUserName(userName);
+                cm.setRoomId(roomId);
+                cm.setData("edit");
+                cm.setQuiz(quiz);
                 SendChatMsg(cm);
                 DoReceive(); // Server에서 읽는 Thread 실행
             }
@@ -230,17 +268,21 @@ public class GameFragment extends Fragment implements SocketInterface{
             public void run() {
                 // Java 호환성을 위해 각각의 Field를 따로따로 보낸다.
                 try {
-                    if(cm.getCode().equals("302")) { // 퇴장
+                    if (cm.getCode().equals("302")) { // 퇴장
                         Log.d("send exit game:", cm.getCode());
                         Log.d("send exit game:", cm.getRoomId());
                         oos.writeObject(cm.getCode());
                         oos.writeObject(cm.getRoomId());
-                    }
-                    else if(cm.getCode().equals("603")){
+                    } else if (cm.getCode().equals("601")) {
                         oos.writeObject(cm.getCode());
                         oos.writeObject(cm.getRoomId());
-                    }
-                    else {
+                        if (cm.getData().equals("edit")) {
+                            oos.writeObject(cm.getQuiz());
+                        }
+                    } else if (cm.getCode().equals("603")) {
+                        oos.writeObject(cm.getCode());
+                        oos.writeObject(cm.getRoomId());
+                    } else {
                         oos.writeObject(cm.getCode());
                         oos.writeObject(cm.getUserName());
                         oos.writeObject(cm.getData());
@@ -258,17 +300,19 @@ public class GameFragment extends Fragment implements SocketInterface{
         try {
             cm.setCode((String) ois.readObject());
             Log.d("read exit game:", cm.getCode());
-            if(cm.getCode().equals("302")) { // 방 퇴장 성공
+            if (cm.getCode().equals("302")) { // 방 퇴장 성공
                 Bundle args = new Bundle();
                 MySocket mySocket = new MySocket(userName, this.ois, this.oos);
                 args.putSerializable("obj", mySocket);
 
-                getActivity().runOnUiThread(() ->Navigation.findNavController(requireView()).navigate(R.id.action_gameFragment_to_gameRoomFragment, args));
-            }
-            else if(cm.getCode().equals("603")){
+                getActivity().runOnUiThread(() -> Navigation.findNavController(requireView()).navigate(R.id.action_gameFragment_to_gameRoomFragment, args));
+            } else if (cm.getCode().equals("601")) {
+                cm.setData((String) ois.readObject());
+                cm.setQuiz((String) ois.readObject());
+                Toast.makeText(requireContext(), cm.getQuiz(), Toast.LENGTH_SHORT).show();
+            } else if (cm.getCode().equals("603")) {
                 myView.clearCanvas();
-            }
-            else {
+            } else {
                 cm.setUserName((String) ois.readObject());
                 cm.setData((String) ois.readObject());
             }

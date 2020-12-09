@@ -10,4 +10,6 @@
     <dimen name="pen_setting_height">500dp</dimen>
     <dimen name="eraser_setting_width">350dp</dimen>
     <dimen name="eraser_setting_height">400dp</dimen>
+    <dimen name="edit_quiz_width">350dp</dimen>
+    <dimen name="edit_quiz_height">200dp</dimen>
 </resources>
